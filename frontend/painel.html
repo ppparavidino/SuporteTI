@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel TI | Suporte</title>
+    <link rel="stylesheet" href="painel.css">
+</head>
+
+<body>
+
+<header class="topo">
+    <div>
+        <h1>Suporte de TI</h1>
+        <p>Painel de chamados · Viação Pendotiba</p>
+    </div>
+    <div class="topo-acoes">
+        <button type="button" onclick="carregarChamados()" class="btn-atualizar">
+            Atualizar
+        </button>
+        <button type="button" class="btn-sair-painel" onclick="sairPainel()">
+            Sair
+        </button>
+    </div>
+</header>
+
+<main class="painel">
+
+    <section class="coluna">
+        <div class="cabecalho-coluna">
+            <h2>Abertos</h2>
+            <span id="contador-abertos">0</span>
+        </div>
+        <div id="abertos" class="lista-chamados"></div>
+    </section>
+
+    <section class="coluna">
+        <div class="cabecalho-coluna">
+            <h2>Em andamento</h2>
+            <span id="contador-andamento">0</span>
+        </div>
+        <div id="andamento" class="lista-chamados"></div>
+    </section>
+
+    <section class="coluna">
+        <div class="cabecalho-coluna">
+            <h2>Resolvidos</h2>
+            <span id="contador-resolvidos">0</span>
+        </div>
+        <div id="resolvidos" class="lista-chamados"></div>
+    </section>
+
+</main>
+
+<!-- Modal -->
+<div id="modal" class="modal escondido">
+    <div class="modal-conteudo">
+
+        <button type="button" class="fechar" onclick="fecharModal()">×</button>
+
+        <h2 id="modal-titulo">Chamado</h2>
+
+        <div id="modal-detalhes"></div>
+
+        <div class="acoes">
+            <label for="responsavel">Responsável</label>
+            <select id="responsavel">
+                <option value="">Selecione</option>
+            </select>
+
+            <label for="status">Status</label>
+            <select id="status" onchange="toggleRelatorio()">
+                <option value="ABERTO">Aberto</option>
+                <option value="EM_ANDAMENTO">Em andamento</option>
+                <option value="RESOLVIDO">Resolvido</option>
+            </select>
+
+            <div id="bloco-relatorio" style="display:none; margin-top:12px;">
+                <label for="relatorio">
+                    Relatório de resolução <span style="color:#dc2626">*</span>
+                </label>
+                <textarea
+                    id="relatorio"
+                    rows="4"
+                    placeholder="Descreva o que foi encontrado e como o problema foi resolvido."
+                ></textarea>
+                <small style="color:#6b7280; display:block; margin-top:4px; font-size:12px;">
+                    Obrigatório ao marcar como Resolvido. Fica no histórico e no e-mail.
+                </small>
+            </div>
+
+            <button type="button" class="btn-salvar" onclick="salvarAlteracoes()">
+                Salvar alterações
+            </button>
+        </div>
+
+        <div id="bloco-historico" style="margin-top:24px; border-top:1px solid #e5e7eb; padding-top:16px;">
+            <h3 style="margin-bottom:12px;">Histórico do chamado</h3>
+            <div id="lista-historico" style="max-height:220px; overflow-y:auto; font-size:13px; color:#374151;">
+                Carregando...
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="painel.js"></script>
+<script>
+function sairPainel() {
+    sessionStorage.removeItem("usuario");
+    window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>

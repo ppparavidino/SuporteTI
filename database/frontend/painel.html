@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Painel - Suporte TI</title>
+
+    <link rel="stylesheet" href="painel.css">
+
+</head>
+
+
+<body>
+
+
+<header class="topo">
+
+    <div>
+
+        <h1>Suporte de TI</h1>
+
+        <p>Painel de chamados</p>
+
+    </div>
+
+
+    <button
+        onclick="carregarChamados()"
+        class="btn-atualizar"
+    >
+        🔄 Atualizar
+    </button>
+
+</header>
+
+
+
+<main class="painel">
+
+
+    <!-- ABERTOS -->
+
+    <section class="coluna">
+
+        <div class="cabecalho-coluna">
+
+            <h2>📥 Abertos</h2>
+
+            <span id="contador-abertos">
+                0
+            </span>
+
+        </div>
+
+
+        <div
+            id="abertos"
+            class="lista-chamados"
+        ></div>
+
+    </section>
+
+
+
+    <!-- ANDAMENTO -->
+
+    <section class="coluna">
+
+        <div class="cabecalho-coluna">
+
+            <h2>🔧 Em andamento</h2>
+
+            <span id="contador-andamento">
+                0
+            </span>
+
+        </div>
+
+
+        <div
+            id="andamento"
+            class="lista-chamados"
+        ></div>
+
+    </section>
+
+
+
+    <!-- RESOLVIDOS -->
+
+    <section class="coluna">
+
+        <div class="cabecalho-coluna">
+
+            <h2>✅ Resolvidos</h2>
+
+            <span id="contador-resolvidos">
+                0
+            </span>
+
+        </div>
+
+
+        <div
+            id="resolvidos"
+            class="lista-chamados"
+        ></div>
+
+    </section>
+
+
+</main>
+
+
+
+<!-- =====================================================
+     MODAL
+====================================================== -->
+
+<div
+    id="modal"
+    class="modal escondido"
+>
+
+    <div class="modal-conteudo">
+
+
+        <button
+            class="fechar"
+            onclick="fecharModal()"
+        >
+            ×
+        </button>
+
+
+        <h2 id="modal-titulo">
+            Chamado
+        </h2>
+
+
+        <div id="modal-detalhes">
+
+        </div>
+
+
+        <div class="acoes">
+
+
+            <label>
+                Responsável
+            </label>
+
+
+            <select id="responsavel">
+
+                <option value="">
+                    Selecione
+                </option>
+
+            </select>
+
+
+            <label>
+                Status
+            </label>
+
+
+            <select id="status">
+
+                <option value="ABERTO">
+                    Aberto
+                </option>
+
+                <option value="EM_ANDAMENTO">
+                    Em andamento
+                </option>
+
+                <option value="RESOLVIDO">
+                    Resolvido
+                </option>
+
+            </select>
+
+
+            <button
+                class="btn-salvar"
+                onclick="salvarAlteracoes()"
+            >
+                💾 Salvar alterações
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+
+<script src="painel.js"></script>
+
+</body>
+
+</html>

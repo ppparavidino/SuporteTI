@@ -1,0 +1,340 @@
+/* =========================================================
+   PAINEL TI — Kanban
+========================================================= */
+
+:root {
+    --blue-600: #1d4ed8;
+    --blue-700: #1e40af;
+    --blue-50: #eff6ff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --green-600: #16a34a;
+    --amber-500: #f59e0b;
+    --red-500: #ef4444;
+    --font: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: var(--font);
+    background: #eef2f7;
+    color: var(--gray-900);
+    min-height: 100vh;
+}
+
+/* ----- Topo ----- */
+.topo {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+    color: #fff;
+    padding: 18px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.25);
+}
+
+.topo h1 {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.topo p {
+    margin-top: 3px;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+.topo-acoes {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-atualizar,
+.btn-sair-painel {
+    border: none;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    font-family: inherit;
+    transition: 0.15s;
+}
+
+.btn-atualizar {
+    background: #fff;
+    color: var(--gray-800);
+}
+
+.btn-atualizar:hover {
+    background: var(--gray-100);
+}
+
+.btn-sair-painel {
+    background: transparent;
+    color: #e2e8f0;
+    border: 1px solid rgba(255,255,255,0.25);
+}
+
+.btn-sair-painel:hover {
+    background: rgba(255,255,255,0.08);
+}
+
+/* ----- Board ----- */
+.painel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    padding: 22px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+.coluna {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 14px;
+    min-height: 280px;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    overflow: hidden;
+}
+
+.cabecalho-coluna {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--gray-200);
+    background: var(--gray-50);
+}
+
+.cabecalho-coluna h2 {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--gray-800);
+}
+
+.cabecalho-coluna span {
+    background: var(--gray-200);
+    color: var(--gray-700);
+    font-size: 12px;
+    font-weight: 700;
+    min-width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+}
+
+.lista-chamados {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+}
+
+/* ----- Card do chamado ----- */
+.card-chamado {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.card-chamado:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 6px 18px rgba(29, 78, 216, 0.1);
+    transform: translateY(-1px);
+}
+
+.card-chamado h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 6px;
+    line-height: 1.35;
+}
+
+.card-chamado p {
+    font-size: 12px;
+    color: var(--gray-500);
+    margin: 3px 0;
+}
+
+.card-chamado .prioridade {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--blue-50);
+    color: var(--blue-600);
+}
+
+/* ----- Modal ----- */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+    backdrop-filter: blur(2px);
+}
+
+.modal.escondido {
+    display: none;
+}
+
+.modal-conteudo {
+    background: #fff;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 16px;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.25);
+}
+
+.fechar {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    border: none;
+    background: var(--gray-100);
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--gray-700);
+    line-height: 1;
+}
+
+.fechar:hover {
+    background: var(--gray-200);
+}
+
+.modal-conteudo h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-right: 36px;
+    color: var(--gray-900);
+}
+
+.detalhe {
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: var(--gray-700);
+    line-height: 1.45;
+}
+
+.detalhe strong {
+    color: var(--gray-900);
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 2px;
+    color: var(--gray-500);
+}
+
+.acoes {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-200);
+}
+
+.acoes label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin: 12px 0 6px;
+}
+
+.acoes select,
+.acoes textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid var(--gray-300);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    background: #fff;
+}
+
+.acoes select:focus,
+.acoes textarea:focus {
+    border-color: var(--blue-600);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+
+.btn-salvar {
+    width: 100%;
+    margin-top: 16px;
+    padding: 13px;
+    border: none;
+    border-radius: 10px;
+    background: var(--blue-600);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn-salvar:hover {
+    background: var(--blue-700);
+}
+
+#bloco-historico h3 {
+    font-size: 14px;
+    color: var(--gray-800);
+}
+
+/* ----- Responsivo ----- */
+@media (max-width: 960px) {
+    .painel {
+        grid-template-columns: 1fr;
+        padding: 14px;
+    }
+
+    .lista-chamados {
+        max-height: none;
+    }
+}
+
+@media (max-width: 500px) {
+    .topo {
+        padding: 14px 16px;
+    }
+
+    .modal-conteudo {
+        padding: 20px 16px;
+    }
+}

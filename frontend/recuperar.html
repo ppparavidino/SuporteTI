@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar senha | Suporte TI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page">
+
+<div class="auth-card">
+    <div class="auth-brand">
+        <div class="logo-icon">TI</div>
+        <h1>Recuperar senha</h1>
+        <p>Informe seu e-mail corporativo</p>
+    </div>
+
+    <h2>Enviar código</h2>
+
+    <label for="email">E-mail corporativo</label>
+    <input type="email" id="email" placeholder="nome@viacaopendotiba.com.br" autocomplete="email">
+
+    <button type="button" class="btn-main" onclick="solicitarCodigo()">Enviar código</button>
+
+    <p id="mensagem"></p>
+
+    <hr class="auth-divider">
+
+    <button type="button" class="btn-ghost" onclick="window.location.href='redefinir.html'">
+        Já tenho o código
+    </button>
+    <button type="button" class="btn-ghost" onclick="window.location.href='login.html'" style="margin-top:8px;">
+        Voltar ao login
+    </button>
+</div>
+
+<script>
+const API_URL = "http://127.0.0.1:8000";
+
+async function solicitarCodigo() {
+    const email = document.getElementById("email").value.trim();
+    const mensagem = document.getElementById("mensagem");
+
+    if (!email) {
+        mensagem.innerText = "Informe o e-mail.";
+        mensagem.style.color = "#dc2626";
+        return;
+    }
+
+    try {
+        const resposta = await fetch(`${API_URL}/recuperar-senha`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email })
+        });
+        const dados = await resposta.json();
+
+        if (dados.erro) {
+            mensagem.style.color = "#dc2626";
+            mensagem.innerText = dados.erro;
+            return;
+        }
+
+        mensagem.style.color = "#16a34a";
+        mensagem.innerText = dados.mensagem || "Verifique seu e-mail.";
+
+        // Guarda e-mail para a próxima tela
+        sessionStorage.setItem("recuperacao_email", email);
+
+        setTimeout(() => {
+            window.location.href = "redefinir.html";
+        }, 1500);
+
+    } catch (e) {
+        console.error(e);
+        mensagem.style.color = "#dc2626";
+        mensagem.innerText = "Não foi possível conectar ao servidor.";
+    }
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Suporte TI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-brand">
+            <div class="logo-icon">TI</div>
+            <h1>Suporte de TI</h1>
+            <p>Viação Pendotiba · Central de atendimento</p>
+        </div>
+
+        <h2>Entrar na sua conta</h2>
+
+        <form onsubmit="fazerLogin(); return false;">
+
+            <label for="login">Login</label>
+            <input
+                type="text"
+                id="login"
+                placeholder="Seu login"
+                autocomplete="username"
+                required
+            >
+
+            <label for="senha">Senha</label>
+            <input
+                type="password"
+                id="senha"
+                placeholder="Sua senha"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit" class="btn-main">Entrar</button>
+        </form>
+
+        <p style="text-align:center; margin-top:14px;">
+            <a href="recuperar.html" style="color:#1d4ed8; font-size:13px; text-decoration:none; font-weight:600;">
+                Esqueci minha senha
+            </a>
+        </p>
+
+        <p id="mensagem"></p>
+
+        <hr class="auth-divider">
+
+        <p class="auth-footer-text">Ainda não possui uma conta?</p>
+        <button
+            type="button"
+            class="btn-ghost"
+            onclick="window.location.href='cadastro.html'"
+        >
+            Criar cadastro
+        </button>
+
+    </div>
+
+    <script src="login.js"></script>
+
+</body>
+
+</html>

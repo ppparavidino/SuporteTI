@@ -1,0 +1,670 @@
+/* =========================================================
+   SUPORTE TI — Design system
+   Viação Pendotiba
+========================================================= */
+
+:root {
+    --blue-600: #1d4ed8;
+    --blue-700: #1e40af;
+    --blue-50: #eff6ff;
+    --blue-100: #dbeafe;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+    --red-600: #dc2626;
+    --green-600: #16a34a;
+    --radius: 12px;
+    --shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+    --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.12);
+    --font: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font);
+    background: #f0f4f8;
+    color: var(--gray-900);
+    min-height: 100vh;
+    line-height: 1.5;
+}
+
+/* =========================
+   AUTH (login / cadastro)
+========================= */
+
+body.auth-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+        radial-gradient(ellipse at top left, #dbeafe 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, #e0e7ff 0%, transparent 45%),
+        #f0f4f8;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    padding: 36px 32px 28px;
+}
+
+.auth-brand {
+    text-align: center;
+    margin-bottom: 28px;
+}
+
+.auth-brand .logo-icon {
+    margin: 0 auto 14px;
+    width: 52px;
+    height: 52px;
+    font-size: 18px;
+}
+
+.auth-brand h1 {
+    font-size: 22px;
+    color: var(--gray-900);
+    font-weight: 700;
+}
+
+.auth-brand p {
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--gray-500);
+}
+
+.auth-card h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-800);
+    margin-bottom: 18px;
+}
+
+.auth-card label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 6px;
+}
+
+.auth-card input,
+.auth-card select {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    border: 1px solid var(--gray-300);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--gray-900);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.auth-card input:focus,
+.auth-card select:focus {
+    border-color: var(--blue-600);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+
+.auth-card .hint {
+    display: block;
+    margin: -10px 0 14px;
+    font-size: 12px;
+    color: var(--gray-400);
+}
+
+.auth-card .btn-primary,
+.auth-card button[type="submit"],
+.auth-card button.btn-main {
+    width: 100%;
+    padding: 13px;
+    margin-top: 4px;
+    background: var(--blue-600);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.auth-card .btn-primary:hover,
+.auth-card button[type="submit"]:hover,
+.auth-card button.btn-main:hover {
+    background: var(--blue-700);
+}
+
+.auth-card .btn-ghost {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    background: transparent;
+    color: var(--blue-600);
+    border: 1px solid var(--gray-200);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.auth-card .btn-ghost:hover {
+    background: var(--blue-50);
+}
+
+.auth-divider {
+    border: none;
+    border-top: 1px solid var(--gray-200);
+    margin: 22px 0 16px;
+}
+
+.auth-footer-text {
+    text-align: center;
+    font-size: 13px;
+    color: var(--gray-500);
+    margin-bottom: 8px;
+}
+
+#mensagem {
+    min-height: 20px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--red-600);
+    text-align: center;
+}
+
+/* Compat: .container antigo vira auth-card */
+.container {
+    width: 100%;
+    max-width: 420px;
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    padding: 36px 32px 28px;
+}
+
+.container h1 {
+    text-align: center;
+    font-size: 22px;
+    margin-bottom: 6px;
+}
+
+.container > p {
+    text-align: center;
+    color: var(--gray-500);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.container h2 {
+    font-size: 16px;
+    margin-bottom: 16px;
+}
+
+.container label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--gray-700);
+}
+
+.container input,
+.container select {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    border: 1px solid var(--gray-300);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+}
+
+.container input:focus,
+.container select:focus {
+    border-color: var(--blue-600);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+
+.container button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 4px;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--blue-600);
+    color: #fff;
+}
+
+.container button:hover {
+    background: var(--blue-700);
+}
+
+.container hr {
+    border: none;
+    border-top: 1px solid var(--gray-200);
+    margin: 20px 0 14px;
+}
+
+/* =========================
+   TOPBAR (páginas internas)
+========================= */
+
+.topbar {
+    height: 68px;
+    background: #fff;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, var(--blue-600), #3b82f6);
+    color: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+}
+
+.logo h1 {
+    font-size: 17px;
+    color: var(--gray-900);
+    font-weight: 700;
+}
+
+.logo span {
+    font-size: 12px;
+    color: var(--gray-500);
+}
+
+.usuario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.usuario strong {
+    display: block;
+    font-size: 13px;
+    color: var(--gray-800);
+}
+
+.usuario span {
+    display: block;
+    font-size: 11px;
+    color: var(--gray-500);
+}
+
+.avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--blue-100);
+    color: var(--blue-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.btn-sair {
+    margin-left: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--gray-200);
+    background: #fff;
+    color: var(--gray-700);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-sair:hover {
+    background: var(--gray-50);
+    border-color: var(--gray-300);
+}
+
+/* =========================
+   MAIN / PÁGINA
+========================= */
+
+.main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 36px 24px 40px;
+}
+
+.page-title {
+    margin-bottom: 24px;
+}
+
+.breadcrumb {
+    font-size: 12px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.page-title h2 {
+    margin-top: 6px;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--gray-900);
+}
+
+.page-title p {
+    margin-top: 6px;
+    color: var(--gray-500);
+    font-size: 14px;
+}
+
+/* =========================
+   CARD
+========================= */
+
+.card {
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 22px 28px;
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+}
+
+.card-header h3 {
+    font-size: 16px;
+    color: var(--gray-900);
+}
+
+.card-header p {
+    margin-top: 4px;
+    font-size: 13px;
+    color: var(--gray-500);
+}
+
+.status-badge {
+    background: var(--blue-50);
+    color: var(--blue-600);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+}
+
+/* =========================
+   FORMULÁRIO
+========================= */
+
+.form {
+    padding: 28px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+}
+
+.form-group label span {
+    color: var(--red-600);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--gray-300);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--gray-900);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: var(--blue-600);
+    box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--gray-400);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.info-box {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    margin-top: 4px;
+    background: var(--blue-50);
+    border: 1px solid var(--blue-100);
+    border-radius: 10px;
+}
+
+.info-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--blue-100);
+    color: var(--blue-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.info-box strong {
+    font-size: 13px;
+    color: var(--gray-800);
+}
+
+.info-box p {
+    margin-top: 3px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--gray-500);
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid var(--gray-200);
+}
+
+button {
+    border: none;
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: 0.15s;
+}
+
+.btn-secondary {
+    background: #fff;
+    border: 1px solid var(--gray-300);
+    color: var(--gray-700);
+}
+
+.btn-secondary:hover {
+    background: var(--gray-50);
+}
+
+.btn-primary {
+    background: var(--blue-600);
+    color: #fff;
+    min-width: 150px;
+}
+
+.btn-primary:hover {
+    background: var(--blue-700);
+    transform: translateY(-1px);
+}
+
+.help-text {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--gray-500);
+}
+
+footer {
+    text-align: center;
+    padding: 24px;
+    color: var(--gray-400);
+    font-size: 12px;
+}
+
+footer span {
+    margin: 0 6px;
+}
+
+/* =========================
+   RESPONSIVO
+========================= */
+
+@media (max-width: 700px) {
+    .topbar {
+        padding: 0 16px;
+        height: 60px;
+    }
+
+    .logo h1 {
+        font-size: 15px;
+    }
+
+    .logo span {
+        display: none;
+    }
+
+    .usuario strong,
+    .usuario span {
+        display: none;
+    }
+
+    .main {
+        padding: 24px 14px 32px;
+    }
+
+    .page-title h2 {
+        font-size: 22px;
+    }
+
+    .form {
+        padding: 20px 16px;
+    }
+
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px 16px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .form-actions {
+        flex-direction: column-reverse;
+    }
+
+    .form-actions .btn-primary,
+    .form-actions .btn-secondary {
+        width: 100%;
+    }
+
+    .auth-card,
+    .container {
+        padding: 28px 20px 24px;
+    }
+}

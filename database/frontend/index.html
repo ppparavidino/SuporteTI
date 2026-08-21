@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Suporte TI</title>
+    
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Cabeçalho -->
+    <header class="topbar">
+
+        <div class="logo">
+            <div class="logo-icon">TI</div>
+
+            <div>
+                <h1>Suporte TI</h1>
+                <p id="usuarioLogado"></p>
+
+<button onclick="sair()">
+    Sair
+</button>
+                <span>Central de Atendimento</span>
+            </div>
+        </div>
+
+        <div class="usuario">
+            <div class="avatar">M</div>
+
+            <div>
+                <strong>Maria Silva</strong>
+                <span>Financeiro</span>
+            </div>
+        </div>
+
+    </header>
+
+
+    <!-- Conteúdo principal -->
+    <main class="main">
+
+        <div class="page-title">
+
+            <div>
+                <span class="breadcrumb">Início / Suporte</span>
+
+                <h2>Abrir chamado</h2>
+
+                <p>
+                    Informe os detalhes do problema para que a equipe de TI possa ajudar.
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- Formulário -->
+        <section class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h3>Solicitação de suporte</h3>
+
+                    <p>
+                        Preencha as informações abaixo.
+                    </p>
+                </div>
+
+                <div class="status-badge">
+                    NOVO CHAMADO
+                </div>
+
+            </div>
+
+
+            <div class="form">
+
+
+                <!-- Título -->
+                <div class="form-group">
+
+                    <label for="titulo">
+                        Título do problema
+                        <span>*</span>
+                    </label>
+
+                    <input
+                        type="text"
+                        id="titulo"
+                        placeholder="Ex: Computador não liga"
+                    >
+
+                    <small>
+                        Resuma o problema em poucas palavras.
+                    </small>
+
+                </div>
+
+
+                <!-- Descrição -->
+                <div class="form-group">
+
+                    <label for="descricao">
+                        Descrição
+                        <span>*</span>
+                    </label>
+
+                    <textarea
+                        id="descricao"
+                        rows="5"
+                        placeholder="Descreva o que está acontecendo, quando começou e qualquer informação que possa ajudar a equipe de TI..."
+                    ></textarea>
+
+                </div>
+
+
+                <!-- Linha com categoria e prioridade -->
+                <div class="form-row">
+
+
+                    <!-- Categoria -->
+                    <div class="form-group">
+
+                        <label for="categoria">
+                            Categoria
+                            <span>*</span>
+                        </label>
+
+                        <select id="categoria">
+
+                            <option value="1">
+                                Computador
+                            </option>
+
+                            <option value="2">
+                                Sistema
+                            </option>
+
+                            <option value="3">
+                                Rede
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- Prioridade -->
+                    <div class="form-group">
+
+                        <label for="prioridade">
+                            Prioridade
+                            <span>*</span>
+                        </label>
+
+                        <select id="prioridade">
+
+                            <option value="NORMAL">
+                                🟡 Normal
+                            </option>
+
+                            <option value="URGENTE">
+                                🔴 Urgente
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Informação -->
+                <div class="info-box">
+
+                    <div class="info-icon">
+                        i
+                    </div>
+
+                    <div>
+
+                        <strong>Quando devo marcar como urgente?</strong>
+
+                        <p>
+                            Utilize essa opção quando o problema estiver
+                            impedindo uma atividade importante ou afetando
+                            diretamente o funcionamento do setor.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Botões -->
+                <div class="form-actions">
+
+                    <button
+                        type="button"
+                        class="btn-secondary"
+                        onclick="limparFormulario()"
+                    >
+                        Limpar
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn-primary"
+                        onclick="abrirChamado()"
+                    >
+                        Abrir chamado
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- Rodapé da página -->
+        <div class="help-text">
+
+            <span>💡</span>
+
+            <p>
+                Precisa de ajuda imediata?
+                Entre em contato com a equipe de TI.
+            </p>
+
+        </div>
+
+    </main>
+
+
+    <footer>
+
+        Sistema de Suporte de TI
+        <span>•</span>
+        Protótipo
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

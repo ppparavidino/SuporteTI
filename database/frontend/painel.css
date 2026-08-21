@@ -1,0 +1,430 @@
+* {
+    box-sizing: border-box;
+}
+
+
+body {
+
+    margin: 0;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    background: #f4f6f8;
+
+    color: #222;
+}
+
+
+/* =====================================================
+   TOPO
+===================================================== */
+
+.topo {
+
+    background: #1f2937;
+
+    color: white;
+
+    padding: 20px 30px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+}
+
+
+.topo h1 {
+
+    margin: 0;
+
+    font-size: 24px;
+}
+
+
+.topo p {
+
+    margin: 5px 0 0;
+
+    color: #cbd5e1;
+}
+
+
+.btn-atualizar {
+
+    border: none;
+
+    background: white;
+
+    color: #1f2937;
+
+    padding: 10px 18px;
+
+    border-radius: 8px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+
+.btn-atualizar:hover {
+
+    background: #e5e7eb;
+}
+
+
+/* =====================================================
+   PAINEL
+===================================================== */
+
+.painel {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 20px;
+
+    padding: 25px;
+}
+
+
+/* =====================================================
+   COLUNA
+===================================================== */
+
+.coluna {
+
+    background: #e5e7eb;
+
+    border-radius: 12px;
+
+    padding: 15px;
+
+    min-height: 500px;
+}
+
+
+.cabecalho-coluna {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+}
+
+
+.cabecalho-coluna h2 {
+
+    font-size: 18px;
+
+    margin: 0;
+}
+
+
+.cabecalho-coluna span {
+
+    background: #374151;
+
+    color: white;
+
+    border-radius: 20px;
+
+    padding: 5px 10px;
+
+    font-size: 13px;
+}
+
+
+/* =====================================================
+   CARDS
+===================================================== */
+
+.lista-chamados {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+
+.chamado {
+
+    background: white;
+
+    border-radius: 10px;
+
+    padding: 15px;
+
+    box-shadow:
+        0 2px 5px
+        rgba(0,0,0,0.08);
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+
+.chamado:hover {
+
+    transform:
+        translateY(-2px);
+
+    box-shadow:
+        0 5px 12px
+        rgba(0,0,0,0.12);
+}
+
+
+.chamado h3 {
+
+    margin:
+        0 0 10px;
+
+    font-size: 16px;
+}
+
+
+.chamado p {
+
+    margin: 6px 0;
+
+    font-size: 14px;
+
+    color: #555;
+}
+
+
+/* =====================================================
+   PRIORIDADE
+===================================================== */
+
+.prioridade {
+
+    display: inline-block;
+
+    margin-top: 8px;
+
+    padding: 5px 8px;
+
+    border-radius: 5px;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+
+.urgente {
+
+    background: #fee2e2;
+
+    color: #b91c1c;
+}
+
+
+.normal {
+
+    background: #e0f2fe;
+
+    color: #0369a1;
+}
+
+
+/* =====================================================
+   MODAL
+===================================================== */
+
+.modal {
+
+    position: fixed;
+
+    top: 0;
+    left: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background:
+        rgba(0,0,0,0.5);
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    padding: 20px;
+}
+
+
+.escondido {
+
+    display: none;
+}
+
+
+.modal-conteudo {
+
+    position: relative;
+
+    background: white;
+
+    width: 100%;
+
+    max-width: 600px;
+
+    border-radius: 14px;
+
+    padding: 30px;
+
+    box-shadow:
+        0 10px 40px
+        rgba(0,0,0,0.2);
+}
+
+
+.fechar {
+
+    position: absolute;
+
+    top: 12px;
+    right: 15px;
+
+    border: none;
+
+    background: none;
+
+    font-size: 28px;
+
+    cursor: pointer;
+
+    color: #666;
+}
+
+
+.fechar:hover {
+
+    color: #111;
+}
+
+
+/* =====================================================
+   DETALHES
+===================================================== */
+
+.detalhe {
+
+    margin:
+        10px 0;
+
+    padding:
+        10px;
+
+    background: #f8fafc;
+
+    border-radius: 7px;
+}
+
+
+.detalhe strong {
+
+    color: #374151;
+}
+
+
+/* =====================================================
+   AÇÕES
+===================================================== */
+
+.acoes {
+
+    margin-top: 25px;
+
+    border-top:
+        1px solid #ddd;
+
+    padding-top: 20px;
+}
+
+
+.acoes label {
+
+    display: block;
+
+    margin-top: 12px;
+
+    margin-bottom: 5px;
+
+    font-weight: bold;
+}
+
+
+.acoes select {
+
+    width: 100%;
+
+    padding: 10px;
+
+    border:
+        1px solid #d1d5db;
+
+    border-radius: 7px;
+
+    font-size: 14px;
+}
+
+
+.btn-salvar {
+
+    width: 100%;
+
+    margin-top: 20px;
+
+    padding: 12px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+
+.btn-salvar:hover {
+
+    background: #1d4ed8;
+}
+
+
+/* =====================================================
+   RESPONSIVO
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .painel {
+
+        grid-template-columns: 1fr;
+
+    }
+
+}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cadastro - Suporte TI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Suporte de TI</h1>
+
+        <h2>Criar cadastro</h2>
+
+        <label>Nome completo</label>
+
+        <input
+            type="text"
+            id="nome"
+            placeholder="Ex: Carlos Oliveira"
+        >
+
+        <label>Login</label>
+
+        <input
+            type="text"
+            id="login"
+            placeholder="Ex: carlos"
+        >
+
+        <label>Senha</label>
+
+        <input
+            type="password"
+            id="senha"
+            placeholder="Crie uma senha"
+        >
+
+        <label>Setor</label>
+
+        <select id="setor">
+
+            <option value="1">
+                Financeiro
+            </option>
+
+            <option value="3">
+                Recursos Humanos
+            </option>
+
+            <option value="4">
+                Operacional
+            </option>
+
+            <option value="5">
+                Compras
+            </option>
+
+            <option value="6">
+                Administração
+            </option>
+
+        </select>
+
+        <button onclick="cadastrar()">
+            Criar cadastro
+        </button>
+
+        <p id="mensagem"></p>
+
+        <hr>
+
+        <button onclick="window.location.href='login.html'">
+            Voltar para Login
+        </button>
+
+    </div>
+
+    <script src="cadastro.js"></script>
+
+</body>
+
+</html>

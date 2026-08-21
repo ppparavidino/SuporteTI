@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Login | Suporte TI</title>
+
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Suporte de TI</h1>
+
+        <p>
+            Acesse sua conta para abrir um chamado.
+        </p>
+
+        <h2>Entrar</h2>
+
+        <form onsubmit="fazerLogin(); return false;">
+
+            <label for="login">
+                Login
+            </label>
+
+            <input
+                type="text"
+                id="login"
+                placeholder="Digite seu login"
+                autocomplete="username"
+                required
+            >
+
+            <label for="senha">
+                Senha
+            </label>
+
+            <input
+                type="password"
+                id="senha"
+                placeholder="Digite sua senha"
+                autocomplete="current-password"
+                required
+            >
+
+            <button type="submit">
+                Entrar
+            </button>
+
+        </form>
+
+        <p id="mensagem"></p>
+
+        <hr>
+
+        <p>
+            Ainda não possui uma conta?
+        </p>
+
+        <button
+            type="button"
+            onclick="window.location.href='cadastro.html'"
+        >
+            Criar cadastro
+        </button>
+
+    </div>
+
+    <script src="login.js"></script>
+
+</body>
+
+</html>

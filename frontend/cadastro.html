@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro | Suporte TI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="auth-page">
+
+    <div class="auth-card">
+
+        <div class="auth-brand">
+            <div class="logo-icon">TI</div>
+            <h1>Suporte de TI</h1>
+            <p>Crie sua conta para abrir chamados</p>
+        </div>
+
+        <h2>Novo cadastro</h2>
+
+        <label for="nome">Nome completo</label>
+        <input type="text" id="nome" placeholder="Ex: Carlos Oliveira" autocomplete="name">
+
+        <label for="login">Login</label>
+        <input type="text" id="login" placeholder="Ex: carlos" autocomplete="username">
+
+        <label for="email">E-mail corporativo</label>
+        <input type="email" id="email" placeholder="nome@viacaopendotiba.com.br" autocomplete="email">
+        <span class="hint">Obrigatório: @viacaopendotiba.com.br</span>
+
+        <label for="senha">Senha</label>
+        <input type="password" id="senha" placeholder="Crie uma senha" autocomplete="new-password">
+
+        <label for="setor">Setor</label>
+        <select id="setor">
+            <option value="1">Financeiro</option>
+            <option value="3">Recursos Humanos</option>
+            <option value="4">Operacional</option>
+            <option value="5">Compras</option>
+            <option value="6">Administração</option>
+        </select>
+
+        <button type="button" class="btn-main" onclick="cadastrar()">Criar cadastro</button>
+
+        <p id="mensagem"></p>
+
+        <hr class="auth-divider">
+
+        <button type="button" class="btn-ghost" onclick="window.location.href='login.html'">
+            Voltar para o login
+        </button>
+
+    </div>
+
+    <script src="cadastro.js"></script>
+
+</body>
+</html>

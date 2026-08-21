@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrir Chamado | Suporte TI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="logo">
+            <div class="logo-icon">TI</div>
+            <div>
+                <h1>Suporte TI</h1>
+                <span>Viação Pendotiba</span>
+            </div>
+        </div>
+
+        <div class="usuario">
+            <div class="avatar" id="avatarUsuario">?</div>
+            <div>
+                <strong id="nomeUsuario">Carregando...</strong>
+                <span id="perfilUsuario">—</span>
+            </div>
+            <button type="button" class="btn-sair" onclick="sair()">Sair</button>
+        </div>
+    </header>
+
+    <main class="main">
+
+        <div class="page-title">
+            <span class="breadcrumb">Início / Suporte</span>
+            <h2>Abrir chamado</h2>
+            <p>Descreva o problema para a equipe de TI atender o mais rápido possível.</p>
+        </div>
+
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h3>Solicitação de suporte</h3>
+                    <p>Campos marcados com * são obrigatórios.</p>
+                </div>
+                <div class="status-badge">NOVO CHAMADO</div>
+            </div>
+
+            <div class="form">
+
+                <div class="form-group">
+                    <label for="titulo">Título do problema <span>*</span></label>
+                    <input type="text" id="titulo" placeholder="Ex: Computador não liga">
+                    <small>Resuma o problema em poucas palavras.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="descricao">Descrição <span>*</span></label>
+                    <textarea id="descricao" rows="5" placeholder="Descreva o que está acontecendo, quando começou e qualquer detalhe que ajude a equipe de TI..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="categoria">Categoria <span>*</span></label>
+                        <select id="categoria">
+                            <option value="1">Computador</option>
+                            <option value="2">Sistema</option>
+                            <option value="3">Rede</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="prioridade">Prioridade <span>*</span></label>
+                        <select id="prioridade">
+                            <option value="NORMAL">Normal</option>
+                            <option value="ALTA">Alta</option>
+                            <option value="URGENTE">Urgente</option>
+                            <option value="BAIXA">Baixa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-icon">i</div>
+                    <div>
+                        <strong>Quando marcar como urgente?</strong>
+                        <p>Use quando o problema impedir o trabalho do setor ou afetar o funcionamento da operação.</p>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="limparFormulario()">Limpar</button>
+                    <button type="button" class="btn-primary" onclick="abrirChamado()">Abrir chamado</button>
+                </div>
+
+            </div>
+        </section>
+
+        <div class="help-text">
+            <span>💡</span>
+            <p>Precisa de ajuda imediata? Fale com a equipe de TI.</p>
+        </div>
+
+    </main>
+
+    <footer>
+        Sistema de Suporte de TI
+        <span>•</span>
+        Viação Pendotiba
+    </footer>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
