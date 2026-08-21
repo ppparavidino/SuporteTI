@@ -240,79 +240,91 @@ async function abrirDetalhes(id) {
             `Chamado #${chamado.id}`;
 
 
-        document.getElementById(
-            "modal-detalhes"
-        ).innerHTML = `
+        const fmt = (d) => {
+            if (!d) return "—";
+            try {
+                return new Date(d).toLocaleString("pt-BR");
+            } catch (e) {
+                return d;
+            }
+        };
 
+        const solicitanteTxt = chamado.solicitante_login
+            ? `${chamado.solicitante} (login: ${chamado.solicitante_login})`
+            : (chamado.solicitante || "—");
+
+        const responsavelTxt = chamado.responsavel
+            ? (chamado.responsavel_login
+                ? `${chamado.responsavel} (login: ${chamado.responsavel_login})`
+                : chamado.responsavel)
+            : "Não atribuído";
+
+        let blocoResolucao = "";
+        if (chamado.status === "RESOLVIDO") {
+            blocoResolucao = `
+                <div class="detalhe">
+                    <strong>Resolvido em</strong>
+                    ${fmt(chamado.resolvido_em)}
+                </div>
+                <div class="detalhe">
+                    <strong>Resolvido por</strong>
+                    ${
+                        chamado.resolvido_por
+                            ? `${chamado.resolvido_por}${chamado.resolvido_por_login ? " (login: " + chamado.resolvido_por_login + ")" : ""}`
+                            : (chamado.responsavel || "—")
+                    }
+                </div>
+                <div class="detalhe">
+                    <strong>Como foi resolvido (relatório)</strong>
+                    ${chamado.relatorio_resolucao || "Sem relatório registrado"}
+                </div>
+            `;
+        }
+
+        document.getElementById("modal-detalhes").innerHTML = `
             <div class="detalhe">
-
-                <strong>Título:</strong>
-
-                ${chamado.titulo}
-
+                <strong>Título</strong>
+                ${chamado.titulo || "—"}
             </div>
-
-
             <div class="detalhe">
-
-                <strong>Descrição:</strong>
-
-                ${
-                    chamado.descricao
-                    || "Sem descrição"
-                }
-
+                <strong>Descrição do problema</strong>
+                ${chamado.descricao || "Sem descrição"}
             </div>
-
-
             <div class="detalhe">
-
-                <strong>Solicitante:</strong>
-
-                ${chamado.solicitante}
-
+                <strong>Solicitante</strong>
+                ${solicitanteTxt}
             </div>
-
-
             <div class="detalhe">
-
-                <strong>Setor:</strong>
-
-                ${chamado.setor}
-
+                <strong>Setor</strong>
+                ${chamado.setor || "—"}
             </div>
-
-
             <div class="detalhe">
-
-                <strong>Categoria:</strong>
-
-                ${chamado.categoria}
-
+                <strong>Categoria</strong>
+                ${chamado.categoria || "—"}
             </div>
-
-
             <div class="detalhe">
-
-                <strong>Prioridade:</strong>
-
-                ${chamado.prioridade}
-
+                <strong>Prioridade</strong>
+                ${chamado.prioridade || "—"}
             </div>
-
-
             <div class="detalhe">
-
-                <strong>Responsável atual:</strong>
-
-                ${
-                    chamado.responsavel
-                    || "Não atribuído"
-                }
-
+                <strong>Status</strong>
+                ${chamado.status || "—"}
             </div>
-
+            <div class="detalhe">
+                <strong>Responsável (TI)</strong>
+                ${responsavelTxt}
+            </div>
+            <div class="detalhe">
+                <strong>Aberto em</strong>
+                ${fmt(chamado.criado_em)}
+            </div>
+            <div class="detalhe">
+                <strong>Última atualização</strong>
+                ${fmt(chamado.atualizado_em)}
+            </div>
+            ${blocoResolucao}
         `;
+
 
 
         document.getElementById("status").value = chamado.status;
@@ -483,19 +495,23 @@ async function carregarHistorico(chamadoId) {
             const data = item.criado_em
                 ? new Date(item.criado_em).toLocaleString("pt-BR")
                 : "";
+            const quem = item.usuario_login
+                ? `${item.usuario_nome || item.usuario || "—"} (login: ${item.usuario_login})`
+                : (item.usuario_nome || item.usuario || "—");
             return `
                 <div style="padding:10px 0; border-bottom:1px solid #f3f4f6;">
                     <div style="display:flex; justify-content:space-between; gap:8px;">
                         <strong style="color:#1d4ed8">${item.acao}</strong>
                         <span style="color:#9ca3af; font-size:12px;">${data}</span>
                     </div>
-                    <div style="margin-top:4px;">${item.descricao || ""}</div>
-                    <div style="margin-top:2px; color:#6b7280; font-size:12px;">
-                        por ${item.usuario || "—"}
+                    <div style="margin-top:4px; white-space:pre-wrap;">${item.descricao || ""}</div>
+                    <div style="margin-top:4px; color:#6b7280; font-size:12px;">
+                        por ${quem}
                     </div>
                 </div>
             `;
         }).join("");
+
 
     } catch (erro) {
         console.error(erro);

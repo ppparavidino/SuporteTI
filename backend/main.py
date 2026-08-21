@@ -505,6 +505,8 @@ def listar_chamados():
         conexao = conectar()
         cursor = conexao.cursor()
 
+        # Kanban: abertos/em andamento = todos
+        # resolvidos = somente últimos 30 dias
         cursor.execute("""
             SELECT
                 c.id,
@@ -513,7 +515,9 @@ def listar_chamados():
                 c.prioridade,
                 c.status,
                 solicitante.nome AS solicitante,
+                solicitante.login AS solicitante_login,
                 responsavel.nome AS responsavel,
+                responsavel.login AS responsavel_login,
                 s.nome AS setor,
                 cat.nome AS categoria,
                 c.criado_em,
@@ -528,6 +532,12 @@ def listar_chamados():
                 ON solicitante.setor_id = s.id
             INNER JOIN categorias cat
                 ON c.categoria_id = cat.id
+            WHERE
+                c.status IN ('ABERTO', 'EM_ANDAMENTO')
+                OR (
+                    c.status = 'RESOLVIDO'
+                    AND c.resolvido_em >= DATEADD(day, -30, GETDATE())
+                )
             ORDER BY c.id DESC
         """)
 
@@ -540,13 +550,16 @@ def listar_chamados():
                 "prioridade": row[3],
                 "status": row[4],
                 "solicitante": row[5],
-                "responsavel": row[6],
-                "setor": row[7],
-                "categoria": row[8],
-                "criado_em": str(row[9]) if row[9] else None,
-                "atualizado_em": str(row[10]) if row[10] else None,
-                "resolvido_em": str(row[11]) if row[11] else None
+                "solicitante_login": row[6],
+                "responsavel": row[7],
+                "responsavel_login": row[8],
+                "setor": row[9],
+                "categoria": row[10],
+                "criado_em": str(row[11]) if row[11] else None,
+                "atualizado_em": str(row[12]) if row[12] else None,
+                "resolvido_em": str(row[13]) if row[13] else None
             })
+
 
         cursor.close()
         conexao.close()
@@ -574,7 +587,9 @@ def detalhes_chamado(chamado_id: int):
                 c.prioridade,
                 c.status,
                 solicitante.nome AS solicitante,
+                solicitante.login AS solicitante_login,
                 responsavel.nome AS responsavel,
+                responsavel.login AS responsavel_login,
                 s.nome AS setor,
                 cat.nome AS categoria,
                 c.criado_em,
@@ -593,11 +608,27 @@ def detalhes_chamado(chamado_id: int):
         """, (chamado_id,))
 
         row = cursor.fetchone()
-        cursor.close()
-        conexao.close()
 
         if not row:
+            cursor.close()
+            conexao.close()
             raise HTTPException(status_code=404, detail="Chamado não encontrado")
+
+        # Último relatório de resolução (se houver)
+        cursor.execute(
+            """
+            SELECT TOP 1 h.descricao, u.nome, u.login, h.criado_em
+            FROM historico_chamados h
+            INNER JOIN usuarios u ON h.usuario_id = u.id
+            WHERE h.chamado_id = ? AND h.acao = 'RESOLVIDO'
+            ORDER BY h.id DESC
+            """,
+            (chamado_id,)
+        )
+        resolucao = cursor.fetchone()
+
+        cursor.close()
+        conexao.close()
 
         return {
             "id": row[0],
@@ -606,13 +637,20 @@ def detalhes_chamado(chamado_id: int):
             "prioridade": row[3],
             "status": row[4],
             "solicitante": row[5],
-            "responsavel": row[6],
-            "setor": row[7],
-            "categoria": row[8],
-            "criado_em": str(row[9]) if row[9] else None,
-            "atualizado_em": str(row[10]) if row[10] else None,
-            "resolvido_em": str(row[11]) if row[11] else None
+            "solicitante_login": row[6],
+            "responsavel": row[7],
+            "responsavel_login": row[8],
+            "setor": row[9],
+            "categoria": row[10],
+            "criado_em": str(row[11]) if row[11] else None,
+            "atualizado_em": str(row[12]) if row[12] else None,
+            "resolvido_em": str(row[13]) if row[13] else None,
+            "relatorio_resolucao": resolucao[0] if resolucao else None,
+            "resolvido_por": resolucao[1] if resolucao else None,
+            "resolvido_por_login": resolucao[2] if resolucao else None,
+            "resolvido_em_historico": str(resolucao[3]) if resolucao and resolucao[3] else None
         }
+
 
     except HTTPException:
         raise
@@ -849,7 +887,8 @@ def listar_historico(chamado_id: int):
                 h.id,
                 h.acao,
                 h.descricao,
-                u.nome AS usuario,
+                u.nome AS usuario_nome,
+                u.login AS usuario_login,
                 h.criado_em
             FROM historico_chamados h
             INNER JOIN usuarios u ON h.usuario_id = u.id
@@ -866,8 +905,11 @@ def listar_historico(chamado_id: int):
                 "acao": row[1],
                 "descricao": row[2],
                 "usuario": row[3],
-                "criado_em": str(row[4]) if row[4] else None
+                "usuario_nome": row[3],
+                "usuario_login": row[4],
+                "criado_em": str(row[5]) if row[5] else None
             })
+
 
         cursor.close()
         conexao.close()
