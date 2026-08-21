@@ -132,12 +132,46 @@ def cadastrar_usuario(usuario: CadastroUsuario):
         return {"erro": f"Erro interno no cadastro: {str(e)}"}
 
 
+# ==========================================================
+# LISTAR SETORES (cadastro)
+# ==========================================================
+@app.get("/setores")
+def listar_setores():
+    try:
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            SELECT id, nome
+            FROM setores
+            WHERE ativo = 1
+            ORDER BY nome
+            """
+        )
+
+        setores = []
+        for row in cursor.fetchall():
+            setores.append({
+                "id": row[0],
+                "nome": row[1]
+            })
+
+        cursor.close()
+        conexao.close()
+        return setores
+
+    except Exception as e:
+        print("ERRO AO LISTAR SETORES:", e)
+        return {"erro": str(e)}
+
 
 # ==========================================================
 # LOGIN
 # ==========================================================
 @app.post("/login")
 def login_usuario(usuario: LoginUsuario):
+
     try:
         conexao = conectar()
         cursor = conexao.cursor()
