@@ -571,10 +571,98 @@ def listar_chamados():
 
 
 # ==========================================================
+# ARQUIVO / HISTÓRICO COMPLETO (todos os chamados)
+# ==========================================================
+@app.get("/chamados/arquivo")
+def listar_arquivo_chamados():
+    """
+    Lista todos os chamados (sem filtro de 30 dias),
+    com dados completos para a página de histórico da TI.
+    """
+    try:
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        cursor.execute("""
+            SELECT
+                c.id,
+                c.titulo,
+                c.descricao,
+                c.prioridade,
+                c.status,
+                solicitante.nome AS solicitante,
+                solicitante.login AS solicitante_login,
+                responsavel.nome AS responsavel,
+                responsavel.login AS responsavel_login,
+                s.nome AS setor,
+                cat.nome AS categoria,
+                c.criado_em,
+                c.atualizado_em,
+                c.resolvido_em
+            FROM chamados c
+            INNER JOIN usuarios solicitante
+                ON c.solicitante_id = solicitante.id
+            LEFT JOIN usuarios responsavel
+                ON c.responsavel_id = responsavel.id
+            INNER JOIN setores s
+                ON solicitante.setor_id = s.id
+            INNER JOIN categorias cat
+                ON c.categoria_id = cat.id
+            ORDER BY c.criado_em DESC, c.id DESC
+        """)
+
+        chamados = []
+        for row in cursor.fetchall():
+            chamado_id = row[0]
+
+            # Relatório de resolução (última ação RESOLVIDO)
+            cursor.execute(
+                """
+                SELECT TOP 1 h.descricao, u.nome, u.login
+                FROM historico_chamados h
+                INNER JOIN usuarios u ON h.usuario_id = u.id
+                WHERE h.chamado_id = ? AND h.acao = 'RESOLVIDO'
+                ORDER BY h.id DESC
+                """,
+                (chamado_id,)
+            )
+            resolucao = cursor.fetchone()
+
+            chamados.append({
+                "id": row[0],
+                "titulo": row[1],
+                "descricao": row[2],
+                "prioridade": row[3],
+                "status": row[4],
+                "solicitante": row[5],
+                "solicitante_login": row[6],
+                "responsavel": row[7],
+                "responsavel_login": row[8],
+                "setor": row[9],
+                "categoria": row[10],
+                "criado_em": str(row[11]) if row[11] else None,
+                "atualizado_em": str(row[12]) if row[12] else None,
+                "resolvido_em": str(row[13]) if row[13] else None,
+                "relatorio_resolucao": resolucao[0] if resolucao else None,
+                "resolvido_por": resolucao[1] if resolucao else None,
+                "resolvido_por_login": resolucao[2] if resolucao else None,
+            })
+
+        cursor.close()
+        conexao.close()
+        return chamados
+
+    except Exception as e:
+        print("ERRO AO LISTAR ARQUIVO:", e)
+        return {"erro": f"Erro ao listar arquivo: {str(e)}"}
+
+
+# ==========================================================
 # DETALHES DE UM CHAMADO
 # ==========================================================
 @app.get("/chamados/{chamado_id}")
 def detalhes_chamado(chamado_id: int):
+
     try:
         conexao = conectar()
         cursor = conexao.cursor()
