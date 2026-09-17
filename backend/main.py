@@ -62,6 +62,7 @@ def pagina_cadastro():
 def inicio():
     return {"mensagem": "API Suporte TI funcionando"}
 
+@app.get("/chamados/{chamado_id}/historico")
 
 # ==========================================================
 # CADASTRO
@@ -1007,3 +1008,47 @@ def listar_historico(chamado_id: int):
         print("ERRO AO LISTAR HISTORICO:", e)
         return {"erro": str(e)}
 
+# ==========================================================
+# AGENTE DE IA
+# ==========================================================
+from backend.agente import perguntar, ollama_online
+
+
+class PerguntaAgente(BaseModel):
+    pergunta: str
+
+
+@app.get("/agente/status")
+def agente_status():
+    """Verifica se o agente está operacional."""
+    online = ollama_online()
+    return {
+        "ollama_online": online,
+        "modelo": "llama3.1:8b",
+        "mensagem": "Agente pronto." if online else "Ollama não está rodando."
+    }
+
+
+@app.post("/agente")
+def agente_perguntar(dados: PerguntaAgente):
+    """
+    Recebe uma pergunta em linguagem natural e devolve a resposta
+    do agente de IA (que consulta o banco quando necessário).
+    """
+    try:
+        if not dados.pergunta or not dados.pergunta.strip():
+            raise HTTPException(status_code=400, detail="Pergunta vazia.")
+
+        resultado = perguntar(dados.pergunta)
+
+        return {
+            "resposta": resultado.get("resposta", ""),
+            "iteracoes": resultado.get("iteracoes", 0),
+            "ferramentas_usadas": resultado.get("ferramentas_usadas", []),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO NO AGENTE:", e)
+        raise HTTPException(status_code=500, detail=f"Erro no agente: {str(e)}")

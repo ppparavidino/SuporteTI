@@ -1,5 +1,5 @@
-// URL base da API (FastAPI rodando na porta 8000)
-const API_URL = "http://127.0.0.1:8000";
+// URL base da API: usa o mesmo host em que a interface está servida
+const API_URL = window.location.origin || "http://127.0.0.1:8000";
 
 let chamadoSelecionado = null;
 
