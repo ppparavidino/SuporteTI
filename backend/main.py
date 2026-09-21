@@ -1011,8 +1011,7 @@ def listar_historico(chamado_id: int):
 # ==========================================================
 # AGENTE DE IA
 # ==========================================================
-from backend.agente import perguntar, ollama_online
-
+from backend.agente import perguntar, ollama_online, gerar_sugestoes
 
 class MensagemHistorico(BaseModel):
     role: str       # "user" ou "assistant"
@@ -1041,6 +1040,7 @@ def agente_perguntar(dados: PerguntaAgente):
     Recebe uma pergunta em linguagem natural e devolve a resposta
     do agente de IA (que consulta o banco quando necessário).
     Aceita histórico opcional para manter contexto da conversa.
+    Também retorna 3 sugestões de follow-up.
     """
     try:
         if not dados.pergunta or not dados.pergunta.strip():
@@ -1052,12 +1052,18 @@ def agente_perguntar(dados: PerguntaAgente):
             for m in dados.historico
         ]
 
+        # 1. Resposta principal do agente
         resultado = perguntar(dados.pergunta, historico=historico)
+        resposta = resultado.get("resposta", "")
+
+        # 2. Sugestões contextuais (chamada separada e rápida)
+        sugestoes = gerar_sugestoes(dados.pergunta, resposta)
 
         return {
-            "resposta": resultado.get("resposta", ""),
+            "resposta": resposta,
             "iteracoes": resultado.get("iteracoes", 0),
             "ferramentas_usadas": resultado.get("ferramentas_usadas", []),
+            "sugestoes": sugestoes,
         }
 
     except HTTPException:

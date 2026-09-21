@@ -232,3 +232,91 @@ def ollama_online() -> bool:
         return any(OLLAMA_MODEL.split(":")[0] in m for m in modelos)
     except Exception:
         return False
+
+
+# ============================================================
+# GERAR SUGESTÕES CONTEXTUAIS
+# ============================================================
+
+PROMPT_SUGESTOES = """Você é um assistente que sugere perguntas de follow-up.
+
+Dada uma pergunta e a resposta do assistente de TI, sugira exatamente 
+3 perguntas curtas que o usuário poderia querer fazer em seguida.
+
+REGRAS:
+1. Responda APENAS com as 3 perguntas, uma por linha.
+2. NÃO numere. NÃO use bullets. NÃO use marcadores.
+3. Cada pergunta deve ter no máximo 60 caracteres.
+4. Devem ser perguntas RELACIONADAS ao tema (não aleatórias).
+5. Escreva em português do Brasil.
+6. NÃO termine com ponto final.
+
+EXEMPLO DE SAÍDA CORRETA:
+Ranking completo de setores
+Evolução mês a mês
+Chamados abertos do RH
+
+EXEMPLO DE SAÍDA ERRADA (não faça isso):
+1. Ranking completo de setores
+2. Evolução mês a mês
+- Chamados abertos do RH
+"""
+
+
+def gerar_sugestoes(pergunta: str, resposta: str) -> list:
+    """
+    Gera 3 sugestões de perguntas de follow-up baseadas na conversa.
+    Retorna uma lista de strings. Se falhar, retorna lista vazia.
+    """
+    if not pergunta or not resposta:
+        return []
+
+    # Limita o tamanho pra não estourar o contexto
+    pergunta = pergunta[:300]
+    resposta = resposta[:800]
+
+    conteudo_usuario = (
+        f"Pergunta do usuário: {pergunta}\n\n"
+        f"Resposta do assistente: {resposta}\n\n"
+        f"Sugira 3 perguntas de follow-up:"
+    )
+
+    payload = {
+        "model": OLLAMA_MODEL,
+        "messages": [
+            {"role": "system", "content": PROMPT_SUGESTOES},
+            {"role": "user", "content": conteudo_usuario},
+        ],
+        "stream": False,
+        "options": {
+            "temperature": 0.7,   # um pouco mais criativo que a resposta principal
+        }
+    }
+
+    try:
+        resp = requests.post(
+            f"{OLLAMA_URL}/api/chat",
+            json=payload,
+            timeout=60,   # timeout menor — é uma chamada mais rápida
+        )
+        resp.raise_for_status()
+        dados = resp.json()
+
+        texto = dados.get("message", {}).get("content", "").strip()
+
+        # Quebra por linha, limpa e filtra
+        linhas = []
+        for linha in texto.split("\n"):
+            linha = linha.strip()
+            # Remove numeração, bullets, hifens
+            linha = linha.lstrip("0123456789.-)•*  ")
+            linha = linha.strip()
+            if linha and len(linha) <= 100:
+                linhas.append(linha)
+
+        # Retorna no máximo 3
+        return linhas[:3]
+
+    except Exception as e:
+        print(f"[Agente] Erro ao gerar sugestões: {e}")
+        return []

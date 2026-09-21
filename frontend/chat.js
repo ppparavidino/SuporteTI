@@ -75,6 +75,33 @@ function adicionarMensagem(texto, tipo) {
     return div;
 }
 
+function adicionarSugestoes(sugestoes) {
+    if (!sugestoes || sugestoes.length === 0) return;
+
+    const body = document.getElementById("chat-body");
+    const div = document.createElement("div");
+    div.className = "chat-sugestoes-resposta";
+
+    const label = document.createElement("span");
+    label.className = "label";
+    label.textContent = "💡 Perguntas relacionadas";
+    div.appendChild(label);
+
+    sugestoes.forEach(s => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = s;
+        b.onclick = () => {
+            document.getElementById("chat-input").value = s;
+            enviarPergunta();
+        };
+        div.appendChild(b);
+    });
+
+    body.appendChild(div);
+    body.scrollTop = body.scrollHeight;
+}
+
 function mostrarDigitando() {
     const body = document.getElementById("chat-body");
     const div = document.createElement("div");
@@ -142,11 +169,16 @@ async function enviarPergunta() {
             return;
         }
 
-        const dados = await resp.json();
+                const dados = await resp.json();
         const resposta = dados.resposta || "(resposta vazia)";
 
         adicionarMensagem(resposta, "bot");
         historico.push({ role: "assistant", content: resposta });
+
+        // Renderiza as sugestões contextuais (se houver)
+        if (dados.sugestoes && dados.sugestoes.length > 0) {
+            adicionarSugestoes(dados.sugestoes);
+        }
 
     } catch (e) {
         removerDigitando();
