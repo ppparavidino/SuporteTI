@@ -1014,8 +1014,14 @@ def listar_historico(chamado_id: int):
 from backend.agente import perguntar, ollama_online
 
 
+class MensagemHistorico(BaseModel):
+    role: str       # "user" ou "assistant"
+    content: str
+
+
 class PerguntaAgente(BaseModel):
     pergunta: str
+    historico: list[MensagemHistorico] = []
 
 
 @app.get("/agente/status")
@@ -1034,12 +1040,19 @@ def agente_perguntar(dados: PerguntaAgente):
     """
     Recebe uma pergunta em linguagem natural e devolve a resposta
     do agente de IA (que consulta o banco quando necessário).
+    Aceita histórico opcional para manter contexto da conversa.
     """
     try:
         if not dados.pergunta or not dados.pergunta.strip():
             raise HTTPException(status_code=400, detail="Pergunta vazia.")
 
-        resultado = perguntar(dados.pergunta)
+        # Converte o histórico recebido pro formato que o agente espera
+        historico = [
+            {"role": m.role, "content": m.content}
+            for m in dados.historico
+        ]
+
+        resultado = perguntar(dados.pergunta, historico=historico)
 
         return {
             "resposta": resultado.get("resposta", ""),

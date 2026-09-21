@@ -2,7 +2,7 @@
 // WIDGET DE CHAT COM AGENTE DE IA
 // ==========================================================
 
-const API_URL = window.location.origin || "http://127.0.0.1:8000";
+const CHAT_API_URL = window.location.origin || "http://127.0.0.1:8000";
 
 const SUGESTOES = [
     "Qual setor abriu mais chamados?",
@@ -44,7 +44,7 @@ async function verificarStatusAgente() {
     if (!el) return;
 
     try {
-        const resp = await fetch(`${API_URL}/agente/status`);
+        const resp = await fetch(`${CHAT_API_URL}/agente/status`);
         const dados = await resp.json();
 
         if (dados.ollama_online) {
@@ -117,10 +117,21 @@ async function enviarPergunta() {
     mostrarDigitando();
 
     try {
-        const resp = await fetch(`${API_URL}/agente`, {
+                // Envia a pergunta + histórico das últimas mensagens (contexto)
+        const historicoEnxuto = historico.slice(-10).map(m => ({
+            role: m.role,
+            content: m.content.length > 500
+                ? m.content.slice(0, 500) + "..."
+                : m.content
+        }));
+
+        const resp = await fetch(`${CHAT_API_URL}/agente`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pergunta })
+            body: JSON.stringify({
+                pergunta: pergunta,
+                historico: historicoEnxuto
+            })
         });
 
         removerDigitando();

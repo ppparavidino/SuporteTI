@@ -141,18 +141,27 @@ def _executar_ferramenta(nome: str, argumentos: dict) -> str:
 # FUNÇÃO PRINCIPAL — O AGENTE
 # ============================================================
 
-def perguntar(pergunta: str) -> dict:
+def perguntar(pergunta: str, historico: list = None) -> dict:
     """
     Recebe uma pergunta em linguagem natural e devolve a resposta
     do agente, depois de ele consultar o banco se necessário.
+
+    Aceita um histórico opcional de mensagens anteriores para
+    manter o contexto da conversa.
     """
     if not pergunta or not pergunta.strip():
         return {"resposta": "Pode repetir a pergunta?", "iteracoes": 0, "ferramentas_usadas": []}
 
-    mensagens = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": pergunta.strip()},
-    ]
+    # Monta a lista de mensagens para o Ollama
+    mensagens = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    # Adiciona histórico (se houver), limitado às últimas 10 mensagens
+    if historico:
+        MAX_HISTORICO = 10
+        mensagens.extend(historico[-MAX_HISTORICO:])
+
+    # Adiciona a pergunta atual
+    mensagens.append({"role": "user", "content": pergunta.strip()})
 
     ferramentas_usadas = []
 
