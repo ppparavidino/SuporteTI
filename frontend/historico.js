@@ -162,7 +162,103 @@ function togglePasta(el) {
     el.parentElement.classList.toggle("aberta");
 }
 
-function abrirDetalhe(id) {
+async function carregarAnexosChamado(chamadoId) {
+    try {
+        const resp = await fetch(`${API_URL}/chamados/${chamadoId}/anexos`);
+        if (!resp.ok) {
+            return "";
+        }
+
+        const dados = await resp.json();
+        const anexos = Array.isArray(dados.anexos) ? dados.anexos : [];
+
+        if (!anexos.length) {
+            return `
+                <div class="detalhe">
+                    <strong>Anexos</strong>
+                    <span class="texto-vazio">Nenhum anexo nesse chamado.</span>
+                </div>
+            `;
+        }
+
+        const itens = anexos.map(anexo => {
+            const nome = anexo.nome_original || anexo.nome_arquivo || "Arquivo";
+            const mime = (anexo.tipo_mime || "").toLowerCase();
+            const ehImagem = mime.startsWith("image/");
+            const ehPdf = mime.includes("pdf") || nome.toLowerCase().endsWith(".pdf");
+            const ehVideo = mime.startsWith("video/");
+            const tamanho = anexo.tamanho_bytes ? `${(anexo.tamanho_bytes / 1024 / 1024).toFixed(2)} MB` : "Arquivo";
+            const preview = ehImagem
+                ? `<img src="${API_URL}/anexos/${anexo.id}/download" alt="${nome}" class="anexo-thumb">`
+                : ehVideo
+                    ? `<div class="anexo-thumb placeholder">🎬</div>`
+                    : ehPdf
+                        ? `<div class="anexo-thumb placeholder">📄</div>`
+                        : `<div class="anexo-thumb placeholder">📎</div>`;
+
+            return `
+                <div class="anexo-card">
+                    <a href="${API_URL}/anexos/${anexo.id}/download" target="_blank" rel="noopener noreferrer" class="anexo-link">
+                        ${preview}
+                    </a>
+                    <div class="anexo-info">
+                        <a href="${API_URL}/anexos/${anexo.id}/download" target="_blank" rel="noopener noreferrer" class="anexo-nome">${nome}</a>
+                        <div class="anexo-meta">${tamanho}</div>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        return `
+            <div class="detalhe">
+                <strong>Anexos</strong>
+                <div class="anexo-lista">${itens}</div>
+            </div>
+        `;
+    } catch (erro) {
+        console.error("Erro ao carregar anexos do histórico:", erro);
+        return "";
+    }
+}
+
+async function reabrirChamadoHistorico(chamadoId) {
+    try {
+        const usuario = JSON.parse(sessionStorage.getItem("usuario") || "null");
+        const usuarioId = usuario && usuario.id ? usuario.id : null;
+
+        if (!usuarioId) {
+            alert("Sessão expirada. Faça login novamente.");
+            return;
+        }
+
+        const resp = await fetch(`${API_URL}/chamados/${chamadoId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                status: "ABERTO",
+                usuario_id: usuarioId,
+                relatorio: null
+            })
+        });
+
+        const dados = await resp.json().catch(() => ({}));
+
+        if (!resp.ok) {
+            throw new Error(dados.detail || dados.erro || "Erro ao reabrir chamado.");
+        }
+
+        alert("Chamado reaberto com sucesso!");
+        fecharModal();
+        await carregar();
+    } catch (erro) {
+        console.error("Erro ao reabrir chamado:", erro);
+        alert("Erro ao reabrir chamado: " + erro.message);
+    }
+}
+
+async function abrirDetalhe(id) {
     const c = todosChamados.find(x => x.id === id);
     if (!c) return;
 
@@ -173,6 +269,11 @@ function abrirDetalhe(id) {
         : (c.responsavel
             ? `${c.responsavel}${c.responsavel_login ? " (login: " + c.responsavel_login + ")" : ""}`
             : "—");
+
+    const anexosHtml = await carregarAnexosChamado(c.id);
+    const botaoReabrir = c.status === "RESOLVIDO"
+        ? `<div class="acoes-modal"><button type="button" class="btn-reabrir" onclick="reabrirChamadoHistorico(${c.id})">↩ Reabrir chamado</button></div>`
+        : "";
 
     document.getElementById("modal-corpo").innerHTML = `
         <div class="detalhe"><strong>Título</strong>${c.titulo || "—"}</div>
@@ -187,6 +288,8 @@ function abrirDetalhe(id) {
         <div class="detalhe"><strong>Resolvido em</strong>${fmtData(c.resolvido_em)}</div>
         <div class="detalhe"><strong>Resolvido por</strong>${resolvidoPor}</div>
         <div class="detalhe"><strong>Como foi resolvido</strong>${c.relatorio_resolucao || "Sem relatório registrado"}</div>
+        ${anexosHtml}
+        ${botaoReabrir}
     `;
 
     document.getElementById("modal").classList.remove("escondido");

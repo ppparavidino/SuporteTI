@@ -13,6 +13,18 @@ from backend.email_service import (
     enviar_email_chamado_resolvido,
     enviar_email_recuperacao_senha,
 )
+from backend.anexos import (
+    validar_arquivo,
+    gerar_nome_unico,
+    salvar_arquivo,
+    registrar_no_banco,
+    listar_anexos,
+    buscar_anexo,
+    deletar_anexo,
+    caminho_absoluto,
+)
+from fastapi import UploadFile, File, Form
+from fastapi.responses import FileResponse
 
 
 class CadastroUsuario(BaseModel):
@@ -1071,3 +1083,158 @@ def agente_perguntar(dados: PerguntaAgente):
     except Exception as e:
         print("ERRO NO AGENTE:", e)
         raise HTTPException(status_code=500, detail=f"Erro no agente: {str(e)}")
+
+# ==========================================================
+# ANEXOS DE CHAMADO
+# ==========================================================
+
+@app.post("/chamados/{chamado_id}/anexos")
+async def upload_anexo(
+    chamado_id: int,
+    arquivo: UploadFile = File(...),
+    usuario_id: int = Form(...),
+    ip_origem: str = Form(None),
+):
+    """
+    Faz upload de um anexo para um chamado.
+    Aceita apenas TI (validação de perfil no frontend + backend).
+    """
+    try:
+        # 1. Verifica se o chamado existe
+        conexao = conectar()
+        cursor = conexao.cursor()
+        cursor.execute("SELECT id FROM chamados WHERE id = ?", (chamado_id,))
+        if not cursor.fetchone():
+            cursor.close()
+            conexao.close()
+            raise HTTPException(status_code=404, detail="Chamado não encontrado.")
+        cursor.close()
+        conexao.close()
+
+        # 2. Lê o conteúdo
+        conteudo = await arquivo.read()
+        tamanho = len(conteudo)
+
+        # 3. Valida
+        ok, motivo = validar_arquivo(
+            nome_original=arquivo.filename,
+            tamanho_bytes=tamanho,
+            mime=arquivo.content_type or "",
+        )
+        if not ok:
+            raise HTTPException(status_code=400, detail=motivo)
+
+        # 4. Gera nome único
+        nome_unico = gerar_nome_unico(arquivo.filename)
+        nome_original_sanitizado = arquivo.filename or "arquivo"
+
+        # 5. Salva no disco (pasta de rede)
+        caminho_relativo = salvar_arquivo(
+            conteudo=conteudo,
+            chamado_id=chamado_id,
+            nome_unico=nome_unico,
+        )
+
+        # 6. Registra no banco
+        anexo_id = registrar_no_banco(
+            chamado_id=chamado_id,
+            nome_original=nome_original_sanitizado,
+            nome_unico=nome_unico,
+            mime=arquivo.content_type or "application/octet-stream",
+            tamanho=tamanho,
+            caminho_relativo=caminho_relativo,
+            enviado_por=usuario_id,
+            ip_origem=ip_origem,
+        )
+
+        if not anexo_id:
+            # Se falhou no banco, tenta apagar o arquivo físico
+            from backend.anexos import apagar_arquivo_fisico
+            apagar_arquivo_fisico(caminho_relativo)
+            raise HTTPException(status_code=500, detail="Erro ao registrar anexo.")
+
+        return {
+            "mensagem": "Anexo enviado com sucesso.",
+            "anexo_id": anexo_id,
+            "nome_original": nome_original_sanitizado,
+            "tamanho_bytes": tamanho,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO NO UPLOAD DE ANEXO:", e)
+        raise HTTPException(status_code=500, detail=f"Erro no upload: {str(e)}")
+
+
+@app.get("/chamados/{chamado_id}/anexos")
+def listar_anexos_chamado(chamado_id: int):
+    """
+    Lista os anexos ativos de um chamado.
+    """
+    try:
+        anexos = listar_anexos(chamado_id)
+        return {"anexos": anexos, "total": len(anexos)}
+    except Exception as e:
+        print("ERRO AO LISTAR ANEXOS:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/anexos/{anexo_id}/download")
+def download_anexo(anexo_id: int):
+    """
+    Baixa um anexo específico.
+    """
+    try:
+        anexo = buscar_anexo(anexo_id)
+        if not anexo:
+            raise HTTPException(status_code=404, detail="Anexo não encontrado.")
+
+        if anexo["deletado_em"]:
+            raise HTTPException(status_code=410, detail="Anexo foi deletado.")
+
+        caminho = caminho_absoluto(anexo["caminho_relativo"])
+        import os
+        if not os.path.exists(caminho):
+            raise HTTPException(status_code=404, detail="Arquivo não encontrado no disco.")
+
+        return FileResponse(
+            path=caminho,
+            media_type=anexo["tipo_mime"],
+            filename=anexo["nome_original"],
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO NO DOWNLOAD:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class DeletarAnexo(BaseModel):
+    usuario_id: int
+    motivo: str | None = None
+
+
+@app.delete("/anexos/{anexo_id}")
+def remover_anexo(anexo_id: int, dados: DeletarAnexo):
+    """
+    Soft delete de um anexo (marca como deletado + apaga arquivo físico).
+    Só TI deveria poder chamar esse endpoint.
+    """
+    try:
+        ok, mensagem = deletar_anexo(
+            anexo_id=anexo_id,
+            usuario_id=dados.usuario_id,
+            motivo=dados.motivo,
+        )
+        if not ok:
+            raise HTTPException(status_code=400, detail=mensagem)
+
+        return {"mensagem": mensagem}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO AO DELETAR ANEXO:", e)
+        raise HTTPException(status_code=500, detail=str(e))
