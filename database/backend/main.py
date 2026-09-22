@@ -192,6 +192,7 @@ def listar_chamados():
                 ON solicitante.setor_id = s.id
             INNER JOIN categorias cat
                 ON c.categoria_id = cat.id
+            WHERE c.status IN ('ABERTO', 'EM_ANDAMENTO')
             ORDER BY c.id DESC
         """)
 

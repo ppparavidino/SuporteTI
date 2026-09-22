@@ -518,8 +518,8 @@ def listar_chamados():
         conexao = conectar()
         cursor = conexao.cursor()
 
-        # Kanban: abertos/em andamento = todos
-        # resolvidos = somente últimos 30 dias
+        # Kanban: apenas abertos e em andamento.
+        # Chamados resolvidos saem do painel e vão para o histórico.
         cursor.execute("""
             SELECT
                 c.id,
@@ -545,12 +545,7 @@ def listar_chamados():
                 ON solicitante.setor_id = s.id
             INNER JOIN categorias cat
                 ON c.categoria_id = cat.id
-            WHERE
-                c.status IN ('ABERTO', 'EM_ANDAMENTO')
-                OR (
-                    c.status = 'RESOLVIDO'
-                    AND c.resolvido_em >= DATEADD(day, -30, GETDATE())
-                )
+            WHERE c.status IN ('ABERTO', 'EM_ANDAMENTO')
             ORDER BY c.id DESC
         """)
 
