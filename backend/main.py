@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from backend.laudo import gerar_laudo, buscar_laudo_existente
 
 import secrets
 from datetime import datetime, timedelta
@@ -803,7 +804,7 @@ class AtualizarChamado(BaseModel):
 
 
 @app.put("/chamados/{chamado_id}")
-def atualizar_chamado(chamado_id: int, dados: AtualizarChamado):
+def atualizar_chamado(chamado_id: int, dados: AtualizarChamado, background_tasks: BackgroundTasks):
     try:
         conexao = conectar()
         cursor = conexao.cursor()
@@ -950,6 +951,18 @@ def atualizar_chamado(chamado_id: int, dados: AtualizarChamado):
                 relatorio=(dados.relatorio or "").strip(),
             )
             print("RESULTADO E-MAIL:", email_info)
+
+        # Geração automática do laudo em background
+        if dados.status and dados.status.upper().strip() == "RESOLVIDO":
+            usuario_gerador = dados.usuario_id or responsavel_atual
+            if usuario_gerador:
+                background_tasks.add_task(
+                    gerar_laudo,
+                    chamado_id=chamado_id,
+                    gerado_por=usuario_gerador,
+                    ip=None,
+                )
+                print(f"[Laudo] Geração automática agendada para chamado #{chamado_id}")
 
         resposta = {
             "mensagem": "Chamado atualizado com sucesso",
@@ -1232,4 +1245,81 @@ def remover_anexo(anexo_id: int, dados: DeletarAnexo):
         raise
     except Exception as e:
         print("ERRO AO DELETAR ANEXO:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+    # ==========================================================
+# LAUDO TÉCNICO (PDF)
+# ==========================================================
+
+class GerarLaudo(BaseModel):
+    usuario_id: int
+    ip_origem: str | None = None
+
+
+@app.get("/chamados/{chamado_id}/laudo")
+def consultar_laudo(chamado_id: int):
+    """
+    Verifica se já existe laudo pro chamado.
+    Retorna os metadados (sem gerar).
+    """
+    try:
+        laudo = buscar_laudo_existente(chamado_id)
+        if not laudo:
+            return {"existe": False}
+        return {"existe": True, "laudo": laudo}
+    except Exception as e:
+        print("ERRO AO CONSULTAR LAUDO:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/chamados/{chamado_id}/laudo")
+def emitir_laudo(chamado_id: int, dados: GerarLaudo):
+    """
+    Gera (ou regenera) o laudo do chamado.
+    - Se não existe → cria
+    - Se já existe  → sobrescreve (versao += 1)
+    Retorna os metadados do laudo.
+    """
+    try:
+        resultado = gerar_laudo(
+            chamado_id=chamado_id,
+            gerado_por=dados.usuario_id,
+            ip=dados.ip_origem,
+        )
+        if not resultado.get("ok"):
+            raise HTTPException(status_code=400, detail=resultado.get("erro", "Erro ao gerar laudo."))
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO AO GERAR LAUDO:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/chamados/{chamado_id}/laudo/download")
+def baixar_laudo(chamado_id: int):
+    """
+    Baixa o PDF do laudo do chamado.
+    """
+    try:
+        laudo = buscar_laudo_existente(chamado_id)
+        if not laudo:
+            raise HTTPException(status_code=404, detail="Laudo não encontrado. Gere primeiro.")
+
+        caminho = caminho_absoluto(laudo["caminho_relativo"])
+
+        import os
+        if not os.path.exists(caminho):
+            raise HTTPException(status_code=404, detail="Arquivo do laudo não encontrado no disco.")
+
+        return FileResponse(
+            path=caminho,
+            media_type="application/pdf",
+            filename=laudo["nome_arquivo"],
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO AO BAIXAR LAUDO:", e)
         raise HTTPException(status_code=500, detail=str(e))
