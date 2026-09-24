@@ -4,24 +4,24 @@
 ========================================================= */
 
 :root {
-    --blue-600: #1d4ed8;
-    --blue-700: #1e40af;
+    --blue-600: #2563eb;
+    --blue-700: #1d4ed8;
     --blue-50: #eff6ff;
     --blue-100: #dbeafe;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6b7280;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-    --gray-900: #111827;
+    --gray-50: #f8fafc;
+    --gray-100: #f1f5f9;
+    --gray-200: #e2e8f0;
+    --gray-300: #cbd5e1;
+    --gray-400: #94a3b8;
+    --gray-500: #64748b;
+    --gray-700: #334155;
+    --gray-800: #1e293b;
+    --gray-900: #0f172a;
     --red-600: #dc2626;
     --green-600: #16a34a;
-    --radius: 12px;
-    --shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
-    --shadow-lg: 0 12px 40px rgba(15, 23, 42, 0.12);
+    --radius: 16px;
+    --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    --shadow-lg: 0 18px 48px rgba(15, 23, 42, 0.14);
     --font: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
 }
 
@@ -33,7 +33,9 @@
 
 body {
     font-family: var(--font);
-    background: #f0f4f8;
+    background:
+        radial-gradient(circle at top left, rgba(191, 219, 254, 0.65), transparent 25%),
+        linear-gradient(180deg, #edf6ff 0%, #f8fafc 100%);
     color: var(--gray-900);
     min-height: 100vh;
     line-height: 1.5;
@@ -67,6 +69,18 @@ body.auth-page {
 .auth-brand {
     text-align: center;
     margin-bottom: 28px;
+}
+
+.brand-logo {
+    display: block;
+    width: min(180px, 52vw);
+    height: auto;
+    object-fit: contain;
+    margin: 0 auto 14px;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
 }
 
 .auth-brand .logo-icon {
@@ -275,9 +289,9 @@ body.auth-page {
 ========================= */
 
 .topbar {
-    height: 68px;
-    background: #fff;
-    border-bottom: 1px solid var(--gray-200);
+    height: 78px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 48%, #1d4ed8 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.12);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -285,7 +299,7 @@ body.auth-page {
     position: sticky;
     top: 0;
     z-index: 50;
-    box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
 }
 
 .logo {
@@ -294,29 +308,41 @@ body.auth-page {
     gap: 12px;
 }
 
+.logo .brand-logo {
+    width: 180px;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
 .logo-icon {
     width: 42px;
     height: 42px;
-    background: linear-gradient(135deg, var(--blue-600), #3b82f6);
-    color: #fff;
-    border-radius: 10px;
+    background: linear-gradient(135deg, #ffffff, #dbeafe);
+    color: var(--blue-700);
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 14px;
     letter-spacing: 0.5px;
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
 }
 
 .logo h1 {
-    font-size: 17px;
-    color: var(--gray-900);
-    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: -0.03em;
 }
 
 .logo span {
     font-size: 12px;
-    color: var(--gray-500);
+    color: rgba(191, 219, 254, 0.9);
 }
 
 .usuario {
@@ -328,44 +354,45 @@ body.auth-page {
 .usuario strong {
     display: block;
     font-size: 13px;
-    color: var(--gray-800);
+    color: #f8fafc;
 }
 
 .usuario span {
     display: block;
     font-size: 11px;
-    color: var(--gray-500);
+    color: rgba(191, 219, 254, 0.9);
 }
 
 .avatar {
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: var(--blue-100);
-    color: var(--blue-600);
+    background: rgba(191, 219, 254, 0.2);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 14px;
+    border: 1px solid rgba(255,255,255,0.15);
 }
 
 .btn-sair {
     margin-left: 8px;
-    padding: 8px 14px;
-    border: 1px solid var(--gray-200);
-    background: #fff;
-    color: var(--gray-700);
-    border-radius: 8px;
+    padding: 9px 14px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(15, 23, 42, 0.18);
+    color: #e2e8f0;
+    border-radius: 10px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     cursor: pointer;
-    transition: background 0.15s, border-color 0.15s;
+    transition: transform 0.15s, background 0.15s;
 }
 
 .btn-sair:hover {
-    background: var(--gray-50);
-    border-color: var(--gray-300);
+    background: rgba(15, 23, 42, 0.28);
+    transform: translateY(-1px);
 }
 
 /* =========================
@@ -373,13 +400,14 @@ body.auth-page {
 ========================= */
 
 .main {
-    max-width: 920px;
+    max-width: 980px;
     margin: 0 auto;
     padding: 36px 24px 40px;
 }
 
 .page-title {
     margin-bottom: 24px;
+    padding: 18px 6px 0;
 }
 
 .breadcrumb {
@@ -390,14 +418,15 @@ body.auth-page {
 }
 
 .page-title h2 {
-    margin-top: 6px;
-    font-size: 26px;
-    font-weight: 700;
+    margin-top: 8px;
+    font-size: clamp(1.8rem, 2vw, 2.4rem);
+    font-weight: 800;
     color: var(--gray-900);
+    letter-spacing: -0.03em;
 }
 
 .page-title p {
-    margin-top: 6px;
+    margin-top: 8px;
     color: var(--gray-500);
     font-size: 14px;
 }
@@ -407,11 +436,12 @@ body.auth-page {
 ========================= */
 
 .card {
-    background: #fff;
-    border: 1px solid var(--gray-200);
+    background: rgba(255,255,255,0.9);
+    border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     overflow: hidden;
+    backdrop-filter: blur(2px);
 }
 
 .card-header {
@@ -421,12 +451,13 @@ body.auth-page {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+    background: linear-gradient(180deg, rgba(248,250,252,0.9), rgba(255,255,255,0.98));
 }
 
 .card-header h3 {
     font-size: 16px;
     color: var(--gray-900);
+    font-weight: 700;
 }
 
 .card-header p {
@@ -436,14 +467,15 @@ body.auth-page {
 }
 
 .status-badge {
-    background: var(--blue-50);
-    color: var(--blue-600);
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    color: var(--blue-700);
     padding: 6px 12px;
     border-radius: 999px;
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
+    font-weight: 800;
+    letter-spacing: 0.04em;
     white-space: nowrap;
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.06);
 }
 
 /* =========================
@@ -578,13 +610,14 @@ button {
 }
 
 .btn-primary {
-    background: var(--blue-600);
+    background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-700) 100%);
     color: #fff;
     min-width: 150px;
+    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.2);
 }
 
 .btn-primary:hover {
-    background: var(--blue-700);
+    background: linear-gradient(135deg, var(--blue-700) 0%, #1e40af 100%);
     transform: translateY(-1px);
 }
 
