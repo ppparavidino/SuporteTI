@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from backend.laudo import gerar_laudo, buscar_laudo_existente
 
 import secrets
 from datetime import datetime, timedelta
@@ -13,6 +14,18 @@ from backend.email_service import (
     enviar_email_chamado_resolvido,
     enviar_email_recuperacao_senha,
 )
+from backend.anexos import (
+    validar_arquivo,
+    gerar_nome_unico,
+    salvar_arquivo,
+    registrar_no_banco,
+    listar_anexos,
+    buscar_anexo,
+    deletar_anexo,
+    caminho_absoluto,
+)
+from fastapi import UploadFile, File, Form
+from fastapi.responses import FileResponse
 
 
 class CadastroUsuario(BaseModel):
@@ -62,6 +75,7 @@ def pagina_cadastro():
 def inicio():
     return {"mensagem": "API Suporte TI funcionando"}
 
+@app.get("/chamados/{chamado_id}/historico")
 
 # ==========================================================
 # CADASTRO
@@ -132,12 +146,46 @@ def cadastrar_usuario(usuario: CadastroUsuario):
         return {"erro": f"Erro interno no cadastro: {str(e)}"}
 
 
+# ==========================================================
+# LISTAR SETORES (cadastro)
+# ==========================================================
+@app.get("/setores")
+def listar_setores():
+    try:
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            SELECT id, nome
+            FROM setores
+            WHERE ativo = 1
+            ORDER BY nome
+            """
+        )
+
+        setores = []
+        for row in cursor.fetchall():
+            setores.append({
+                "id": row[0],
+                "nome": row[1]
+            })
+
+        cursor.close()
+        conexao.close()
+        return setores
+
+    except Exception as e:
+        print("ERRO AO LISTAR SETORES:", e)
+        return {"erro": str(e)}
+
 
 # ==========================================================
 # LOGIN
 # ==========================================================
 @app.post("/login")
 def login_usuario(usuario: LoginUsuario):
+
     try:
         conexao = conectar()
         cursor = conexao.cursor()
@@ -471,6 +519,8 @@ def listar_chamados():
         conexao = conectar()
         cursor = conexao.cursor()
 
+        # Kanban: apenas abertos e em andamento.
+        # Chamados resolvidos saem do painel e vão para o histórico.
         cursor.execute("""
             SELECT
                 c.id,
@@ -479,7 +529,9 @@ def listar_chamados():
                 c.prioridade,
                 c.status,
                 solicitante.nome AS solicitante,
+                solicitante.login AS solicitante_login,
                 responsavel.nome AS responsavel,
+                responsavel.login AS responsavel_login,
                 s.nome AS setor,
                 cat.nome AS categoria,
                 c.criado_em,
@@ -494,6 +546,7 @@ def listar_chamados():
                 ON solicitante.setor_id = s.id
             INNER JOIN categorias cat
                 ON c.categoria_id = cat.id
+            WHERE c.status IN ('ABERTO', 'EM_ANDAMENTO')
             ORDER BY c.id DESC
         """)
 
@@ -506,13 +559,16 @@ def listar_chamados():
                 "prioridade": row[3],
                 "status": row[4],
                 "solicitante": row[5],
-                "responsavel": row[6],
-                "setor": row[7],
-                "categoria": row[8],
-                "criado_em": str(row[9]) if row[9] else None,
-                "atualizado_em": str(row[10]) if row[10] else None,
-                "resolvido_em": str(row[11]) if row[11] else None
+                "solicitante_login": row[6],
+                "responsavel": row[7],
+                "responsavel_login": row[8],
+                "setor": row[9],
+                "categoria": row[10],
+                "criado_em": str(row[11]) if row[11] else None,
+                "atualizado_em": str(row[12]) if row[12] else None,
+                "resolvido_em": str(row[13]) if row[13] else None
             })
+
 
         cursor.close()
         conexao.close()
@@ -524,10 +580,14 @@ def listar_chamados():
 
 
 # ==========================================================
-# DETALHES DE UM CHAMADO
+# ARQUIVO / HISTÓRICO COMPLETO (todos os chamados)
 # ==========================================================
-@app.get("/chamados/{chamado_id}")
-def detalhes_chamado(chamado_id: int):
+@app.get("/chamados/arquivo")
+def listar_arquivo_chamados():
+    """
+    Lista todos os chamados (sem filtro de 30 dias),
+    com dados completos para a página de histórico da TI.
+    """
     try:
         conexao = conectar()
         cursor = conexao.cursor()
@@ -540,7 +600,93 @@ def detalhes_chamado(chamado_id: int):
                 c.prioridade,
                 c.status,
                 solicitante.nome AS solicitante,
+                solicitante.login AS solicitante_login,
                 responsavel.nome AS responsavel,
+                responsavel.login AS responsavel_login,
+                s.nome AS setor,
+                cat.nome AS categoria,
+                c.criado_em,
+                c.atualizado_em,
+                c.resolvido_em
+            FROM chamados c
+            INNER JOIN usuarios solicitante
+                ON c.solicitante_id = solicitante.id
+            LEFT JOIN usuarios responsavel
+                ON c.responsavel_id = responsavel.id
+            INNER JOIN setores s
+                ON solicitante.setor_id = s.id
+            INNER JOIN categorias cat
+                ON c.categoria_id = cat.id
+            ORDER BY c.criado_em DESC, c.id DESC
+        """)
+
+        chamados = []
+        for row in cursor.fetchall():
+            chamado_id = row[0]
+
+            # Relatório de resolução (última ação RESOLVIDO)
+            cursor.execute(
+                """
+                SELECT TOP 1 h.descricao, u.nome, u.login
+                FROM historico_chamados h
+                INNER JOIN usuarios u ON h.usuario_id = u.id
+                WHERE h.chamado_id = ? AND h.acao = 'RESOLVIDO'
+                ORDER BY h.id DESC
+                """,
+                (chamado_id,)
+            )
+            resolucao = cursor.fetchone()
+
+            chamados.append({
+                "id": row[0],
+                "titulo": row[1],
+                "descricao": row[2],
+                "prioridade": row[3],
+                "status": row[4],
+                "solicitante": row[5],
+                "solicitante_login": row[6],
+                "responsavel": row[7],
+                "responsavel_login": row[8],
+                "setor": row[9],
+                "categoria": row[10],
+                "criado_em": str(row[11]) if row[11] else None,
+                "atualizado_em": str(row[12]) if row[12] else None,
+                "resolvido_em": str(row[13]) if row[13] else None,
+                "relatorio_resolucao": resolucao[0] if resolucao else None,
+                "resolvido_por": resolucao[1] if resolucao else None,
+                "resolvido_por_login": resolucao[2] if resolucao else None,
+            })
+
+        cursor.close()
+        conexao.close()
+        return chamados
+
+    except Exception as e:
+        print("ERRO AO LISTAR ARQUIVO:", e)
+        return {"erro": f"Erro ao listar arquivo: {str(e)}"}
+
+
+# ==========================================================
+# DETALHES DE UM CHAMADO
+# ==========================================================
+@app.get("/chamados/{chamado_id}")
+def detalhes_chamado(chamado_id: int):
+
+    try:
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        cursor.execute("""
+            SELECT
+                c.id,
+                c.titulo,
+                c.descricao,
+                c.prioridade,
+                c.status,
+                solicitante.nome AS solicitante,
+                solicitante.login AS solicitante_login,
+                responsavel.nome AS responsavel,
+                responsavel.login AS responsavel_login,
                 s.nome AS setor,
                 cat.nome AS categoria,
                 c.criado_em,
@@ -559,11 +705,27 @@ def detalhes_chamado(chamado_id: int):
         """, (chamado_id,))
 
         row = cursor.fetchone()
-        cursor.close()
-        conexao.close()
 
         if not row:
+            cursor.close()
+            conexao.close()
             raise HTTPException(status_code=404, detail="Chamado não encontrado")
+
+        # Último relatório de resolução (se houver)
+        cursor.execute(
+            """
+            SELECT TOP 1 h.descricao, u.nome, u.login, h.criado_em
+            FROM historico_chamados h
+            INNER JOIN usuarios u ON h.usuario_id = u.id
+            WHERE h.chamado_id = ? AND h.acao = 'RESOLVIDO'
+            ORDER BY h.id DESC
+            """,
+            (chamado_id,)
+        )
+        resolucao = cursor.fetchone()
+
+        cursor.close()
+        conexao.close()
 
         return {
             "id": row[0],
@@ -572,13 +734,20 @@ def detalhes_chamado(chamado_id: int):
             "prioridade": row[3],
             "status": row[4],
             "solicitante": row[5],
-            "responsavel": row[6],
-            "setor": row[7],
-            "categoria": row[8],
-            "criado_em": str(row[9]) if row[9] else None,
-            "atualizado_em": str(row[10]) if row[10] else None,
-            "resolvido_em": str(row[11]) if row[11] else None
+            "solicitante_login": row[6],
+            "responsavel": row[7],
+            "responsavel_login": row[8],
+            "setor": row[9],
+            "categoria": row[10],
+            "criado_em": str(row[11]) if row[11] else None,
+            "atualizado_em": str(row[12]) if row[12] else None,
+            "resolvido_em": str(row[13]) if row[13] else None,
+            "relatorio_resolucao": resolucao[0] if resolucao else None,
+            "resolvido_por": resolucao[1] if resolucao else None,
+            "resolvido_por_login": resolucao[2] if resolucao else None,
+            "resolvido_em_historico": str(resolucao[3]) if resolucao and resolucao[3] else None
         }
+
 
     except HTTPException:
         raise
@@ -635,7 +804,7 @@ class AtualizarChamado(BaseModel):
 
 
 @app.put("/chamados/{chamado_id}")
-def atualizar_chamado(chamado_id: int, dados: AtualizarChamado):
+def atualizar_chamado(chamado_id: int, dados: AtualizarChamado, background_tasks: BackgroundTasks):
     try:
         conexao = conectar()
         cursor = conexao.cursor()
@@ -783,6 +952,18 @@ def atualizar_chamado(chamado_id: int, dados: AtualizarChamado):
             )
             print("RESULTADO E-MAIL:", email_info)
 
+        # Geração automática do laudo em background
+        if dados.status and dados.status.upper().strip() == "RESOLVIDO":
+            usuario_gerador = dados.usuario_id or responsavel_atual
+            if usuario_gerador:
+                background_tasks.add_task(
+                    gerar_laudo,
+                    chamado_id=chamado_id,
+                    gerado_por=usuario_gerador,
+                    ip=None,
+                )
+                print(f"[Laudo] Geração automática agendada para chamado #{chamado_id}")
+
         resposta = {
             "mensagem": "Chamado atualizado com sucesso",
             "historico_registrado": len(acoes_historico),
@@ -815,7 +996,8 @@ def listar_historico(chamado_id: int):
                 h.id,
                 h.acao,
                 h.descricao,
-                u.nome AS usuario,
+                u.nome AS usuario_nome,
+                u.login AS usuario_login,
                 h.criado_em
             FROM historico_chamados h
             INNER JOIN usuarios u ON h.usuario_id = u.id
@@ -832,8 +1014,11 @@ def listar_historico(chamado_id: int):
                 "acao": row[1],
                 "descricao": row[2],
                 "usuario": row[3],
-                "criado_em": str(row[4]) if row[4] else None
+                "usuario_nome": row[3],
+                "usuario_login": row[4],
+                "criado_em": str(row[5]) if row[5] else None
             })
+
 
         cursor.close()
         conexao.close()
@@ -843,3 +1028,298 @@ def listar_historico(chamado_id: int):
         print("ERRO AO LISTAR HISTORICO:", e)
         return {"erro": str(e)}
 
+# ==========================================================
+# AGENTE DE IA
+# ==========================================================
+from backend.agente import perguntar, ollama_online, gerar_sugestoes
+
+class MensagemHistorico(BaseModel):
+    role: str       # "user" ou "assistant"
+    content: str
+
+
+class PerguntaAgente(BaseModel):
+    pergunta: str
+    historico: list[MensagemHistorico] = []
+
+
+@app.get("/agente/status")
+def agente_status():
+    """Verifica se o agente está operacional."""
+    online = ollama_online()
+    return {
+        "ollama_online": online,
+        "modelo": "llama3.1:8b",
+        "mensagem": "Agente pronto." if online else "Ollama não está rodando."
+    }
+
+
+@app.post("/agente")
+def agente_perguntar(dados: PerguntaAgente):
+    """
+    Recebe uma pergunta em linguagem natural e devolve a resposta
+    do agente de IA (que consulta o banco quando necessário).
+    Aceita histórico opcional para manter contexto da conversa.
+    Também retorna 3 sugestões de follow-up.
+    """
+    try:
+        if not dados.pergunta or not dados.pergunta.strip():
+            raise HTTPException(status_code=400, detail="Pergunta vazia.")
+
+        # Converte o histórico recebido pro formato que o agente espera
+        historico = [
+            {"role": m.role, "content": m.content}
+            for m in dados.historico
+        ]
+
+        # 1. Resposta principal do agente
+        resultado = perguntar(dados.pergunta, historico=historico)
+        resposta = resultado.get("resposta", "")
+
+        # 2. Sugestões contextuais (chamada separada e rápida)
+        sugestoes = gerar_sugestoes(dados.pergunta, resposta)
+
+        return {
+            "resposta": resposta,
+            "iteracoes": resultado.get("iteracoes", 0),
+            "ferramentas_usadas": resultado.get("ferramentas_usadas", []),
+            "sugestoes": sugestoes,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO NO AGENTE:", e)
+        raise HTTPException(status_code=500, detail=f"Erro no agente: {str(e)}")
+
+# ==========================================================
+# ANEXOS DE CHAMADO
+# ==========================================================
+
+@app.post("/chamados/{chamado_id}/anexos")
+async def upload_anexo(
+    chamado_id: int,
+    arquivo: UploadFile = File(...),
+    usuario_id: int = Form(...),
+    ip_origem: str = Form(None),
+):
+    """
+    Faz upload de um anexo para um chamado.
+    Aceita apenas TI (validação de perfil no frontend + backend).
+    """
+    try:
+        # 1. Verifica se o chamado existe
+        conexao = conectar()
+        cursor = conexao.cursor()
+        cursor.execute("SELECT id FROM chamados WHERE id = ?", (chamado_id,))
+        if not cursor.fetchone():
+            cursor.close()
+            conexao.close()
+            raise HTTPException(status_code=404, detail="Chamado não encontrado.")
+        cursor.close()
+        conexao.close()
+
+        # 2. Lê o conteúdo
+        conteudo = await arquivo.read()
+        tamanho = len(conteudo)
+
+        # 3. Valida
+        ok, motivo = validar_arquivo(
+            nome_original=arquivo.filename,
+            tamanho_bytes=tamanho,
+            mime=arquivo.content_type or "",
+        )
+        if not ok:
+            raise HTTPException(status_code=400, detail=motivo)
+
+        # 4. Gera nome único
+        nome_unico = gerar_nome_unico(arquivo.filename)
+        nome_original_sanitizado = arquivo.filename or "arquivo"
+
+        # 5. Salva no disco (pasta de rede)
+        caminho_relativo = salvar_arquivo(
+            conteudo=conteudo,
+            chamado_id=chamado_id,
+            nome_unico=nome_unico,
+        )
+
+        # 6. Registra no banco
+        anexo_id = registrar_no_banco(
+            chamado_id=chamado_id,
+            nome_original=nome_original_sanitizado,
+            nome_unico=nome_unico,
+            mime=arquivo.content_type or "application/octet-stream",
+            tamanho=tamanho,
+            caminho_relativo=caminho_relativo,
+            enviado_por=usuario_id,
+            ip_origem=ip_origem,
+        )
+
+        if not anexo_id:
+            # Se falhou no banco, tenta apagar o arquivo físico
+            from backend.anexos import apagar_arquivo_fisico
+            apagar_arquivo_fisico(caminho_relativo)
+            raise HTTPException(status_code=500, detail="Erro ao registrar anexo.")
+
+        return {
+            "mensagem": "Anexo enviado com sucesso.",
+            "anexo_id": anexo_id,
+            "nome_original": nome_original_sanitizado,
+            "tamanho_bytes": tamanho,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO NO UPLOAD DE ANEXO:", e)
+        raise HTTPException(status_code=500, detail=f"Erro no upload: {str(e)}")
+
+
+@app.get("/chamados/{chamado_id}/anexos")
+def listar_anexos_chamado(chamado_id: int):
+    """
+    Lista os anexos ativos de um chamado.
+    """
+    try:
+        anexos = listar_anexos(chamado_id)
+        return {"anexos": anexos, "total": len(anexos)}
+    except Exception as e:
+        print("ERRO AO LISTAR ANEXOS:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/anexos/{anexo_id}/download")
+def download_anexo(anexo_id: int):
+    """
+    Baixa um anexo específico.
+    """
+    try:
+        anexo = buscar_anexo(anexo_id)
+        if not anexo:
+            raise HTTPException(status_code=404, detail="Anexo não encontrado.")
+
+        if anexo["deletado_em"]:
+            raise HTTPException(status_code=410, detail="Anexo foi deletado.")
+
+        caminho = caminho_absoluto(anexo["caminho_relativo"])
+        import os
+        if not os.path.exists(caminho):
+            raise HTTPException(status_code=404, detail="Arquivo não encontrado no disco.")
+
+        return FileResponse(
+            path=caminho,
+            media_type=anexo["tipo_mime"],
+            filename=anexo["nome_original"],
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO NO DOWNLOAD:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+class DeletarAnexo(BaseModel):
+    usuario_id: int
+    motivo: str | None = None
+
+
+@app.delete("/anexos/{anexo_id}")
+def remover_anexo(anexo_id: int, dados: DeletarAnexo):
+    """
+    Soft delete de um anexo (marca como deletado + apaga arquivo físico).
+    Só TI deveria poder chamar esse endpoint.
+    """
+    try:
+        ok, mensagem = deletar_anexo(
+            anexo_id=anexo_id,
+            usuario_id=dados.usuario_id,
+            motivo=dados.motivo,
+        )
+        if not ok:
+            raise HTTPException(status_code=400, detail=mensagem)
+
+        return {"mensagem": mensagem}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO AO DELETAR ANEXO:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+    # ==========================================================
+# LAUDO TÉCNICO (PDF)
+# ==========================================================
+
+class GerarLaudo(BaseModel):
+    usuario_id: int
+    ip_origem: str | None = None
+
+
+@app.get("/chamados/{chamado_id}/laudo")
+def consultar_laudo(chamado_id: int):
+    """
+    Verifica se já existe laudo pro chamado.
+    Retorna os metadados (sem gerar).
+    """
+    try:
+        laudo = buscar_laudo_existente(chamado_id)
+        if not laudo:
+            return {"existe": False}
+        return {"existe": True, "laudo": laudo}
+    except Exception as e:
+        print("ERRO AO CONSULTAR LAUDO:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/chamados/{chamado_id}/laudo")
+def emitir_laudo(chamado_id: int, dados: GerarLaudo):
+    """
+    Gera (ou regenera) o laudo do chamado.
+    - Se não existe → cria
+    - Se já existe  → sobrescreve (versao += 1)
+    Retorna os metadados do laudo.
+    """
+    try:
+        resultado = gerar_laudo(
+            chamado_id=chamado_id,
+            gerado_por=dados.usuario_id,
+            ip=dados.ip_origem,
+        )
+        if not resultado.get("ok"):
+            raise HTTPException(status_code=400, detail=resultado.get("erro", "Erro ao gerar laudo."))
+        return resultado
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO AO GERAR LAUDO:", e)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/chamados/{chamado_id}/laudo/download")
+def baixar_laudo(chamado_id: int):
+    """
+    Baixa o PDF do laudo do chamado.
+    """
+    try:
+        laudo = buscar_laudo_existente(chamado_id)
+        if not laudo:
+            raise HTTPException(status_code=404, detail="Laudo não encontrado. Gere primeiro.")
+
+        caminho = caminho_absoluto(laudo["caminho_relativo"])
+
+        import os
+        if not os.path.exists(caminho):
+            raise HTTPException(status_code=404, detail="Arquivo do laudo não encontrado no disco.")
+
+        return FileResponse(
+            path=caminho,
+            media_type="application/pdf",
+            filename=laudo["nome_arquivo"],
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERRO AO BAIXAR LAUDO:", e)
+        raise HTTPException(status_code=500, detail=str(e))

@@ -1,6 +1,37 @@
 // URL base da API (FastAPI rodando na porta 8000)
 const API_URL = "http://127.0.0.1:8000";
 
+async function carregarSetores() {
+    const select = document.getElementById("setor");
+    const mensagem = document.getElementById("mensagem");
+
+    try {
+        const resposta = await fetch(`${API_URL}/setores`);
+        const setores = await resposta.json();
+
+        if (!Array.isArray(setores) || setores.length === 0) {
+            select.innerHTML = '<option value="">Nenhum setor disponível</option>';
+            return;
+        }
+
+        select.innerHTML = '<option value="">Selecione o setor</option>';
+
+        setores.forEach(s => {
+            const opt = document.createElement("option");
+            opt.value = s.id;
+            opt.textContent = s.nome;
+            select.appendChild(opt);
+        });
+
+    } catch (erro) {
+        console.error(erro);
+        select.innerHTML = '<option value="">Erro ao carregar setores</option>';
+        if (mensagem) {
+            mensagem.innerText = "Não foi possível carregar os setores. Verifique se a API está rodando.";
+        }
+    }
+}
+
 async function cadastrar() {
 
     const nome = document.getElementById("nome").value.trim();
@@ -11,12 +42,11 @@ async function cadastrar() {
 
     const mensagem = document.getElementById("mensagem");
 
-    if (!nome || !login || !email || !senha) {
+    if (!nome || !login || !email || !senha || !setor) {
         mensagem.innerText = "Preencha todos os campos.";
         return;
     }
 
-    // Validação básica no frontend
     const emailLower = email.toLowerCase();
     if (!emailLower.endsWith("@viacaopendotiba.com.br")) {
         mensagem.innerText =
@@ -58,3 +88,5 @@ async function cadastrar() {
             "Não foi possível conectar ao servidor. Verifique se a API está rodando na porta 8000.";
     }
 }
+
+document.addEventListener("DOMContentLoaded", carregarSetores);

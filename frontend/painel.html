@@ -6,16 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel TI | Suporte</title>
     <link rel="stylesheet" href="painel.css">
+    <link rel="stylesheet" href="chat.css">
 </head>
 
 <body>
 
 <header class="topo">
-    <div>
-        <h1>Suporte de TI</h1>
-        <p>Painel de chamados · Viação Pendotiba</p>
+    <div class="brand">
+        <img src="LOGOTIPO.png" alt="Logo Viação Pendotiba" class="brand-logo">
+        <div>
+            <h1>Suporte de TI</h1>
+            <p>Painel de chamados · Viação Pendotiba</p>
+        </div>
     </div>
     <div class="topo-acoes">
+        <a href="historico.html" class="btn-atualizar" style="text-decoration:none; display:inline-flex; align-items:center;">
+            Histórico completo
+        </a>
         <button type="button" onclick="carregarChamados()" class="btn-atualizar">
             Atualizar
         </button>
@@ -52,6 +59,35 @@
     </section>
 
 </main>
+
+<div id="chat-widget" aria-live="polite">
+    <button type="button" id="chat-btn" class="chat-btn" title="Assistente de TI" onclick="toggleChat()">
+        💬
+        <span class="badge-pulse"></span>
+    </button>
+
+    <div id="chat-janela" class="chat-janela escondido">
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <strong>🤖 Assistente de TI</strong>
+                <small id="chat-status">verificando...</small>
+            </div>
+            <button type="button" onclick="toggleChat()" title="Fechar">×</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="chat-msg bot">
+                Olá! 👋 Sou o assistente de TI.
+                Posso responder perguntas sobre os chamados do sistema.
+                Escolha uma sugestão abaixo ou digite sua pergunta.
+            </div>
+        </div>
+        <div class="chat-sugestoes" id="chat-sugestoes"></div>
+        <div class="chat-footer">
+            <input type="text" id="chat-input" placeholder="Digite sua pergunta..." autocomplete="off" onkeydown="if(event.key==='Enter' && !event.shiftKey){ event.preventDefault(); enviarPergunta(); }">
+            <button type="button" id="chat-enviar" onclick="enviarPergunta()" title="Enviar">➤</button>
+        </div>
+    </div>
+</div>
 
 <!-- Modal -->
 <div id="modal" class="modal escondido">
@@ -90,6 +126,49 @@
                 </small>
             </div>
 
+            <div id="bloco-controle-reabertura" style="display:none; margin-top:10px;">
+                <button type="button" id="btn-reabrir" class="btn-secundario" onclick="reabrirChamado()">
+                    Reabrir chamado
+                </button>
+            </div>
+
+                            <!-- ===== ANEXOS (evidências) ===== -->
+                <div id="bloco-anexos" style="display:none; margin-top:18px;">
+                    <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">
+                        📎 Anexos (evidências)
+                        <span style="font-weight:400; color:#6b7280; font-size:12px;">
+                            — até 5 arquivos, 50 MB cada
+                        </span>
+                    </label>
+
+                    <!-- Área de drop -->
+                    <div id="area-drop"
+                         style="border: 2px dashed #cbd5e1; border-radius: 10px; padding: 20px; text-align: center; background: #f8fafc; cursor: pointer; transition: 0.15s;">
+                        <div style="font-size: 26px; margin-bottom: 6px;">📁</div>
+                        <div style="font-size: 13px; color: #374151; font-weight: 600;">
+                            Arraste arquivos aqui ou clique para escolher
+                        </div>
+                        <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">
+                            JPG, PNG, PDF, MP4, MOV
+                        </div>
+                    </div>
+
+                    <!-- Input escondido -->
+                    <input type="file"
+                           id="input-anexos"
+                           multiple
+                           accept=".jpg,.jpeg,.png,.pdf,.mp4,.mov"
+                           style="display:none;">
+
+                    <!-- Lista de arquivos selecionados -->
+                    <div id="lista-anexos" style="margin-top: 12px;"></div>
+
+                    <!-- Aviso sobre LGPD -->
+                    <div style="margin-top: 10px; padding: 8px 12px; background: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 6px; font-size: 11.5px; color: #92400e;">
+                        ⚠️ <strong>LGPD:</strong> certifique-se que o anexo não contém dados pessoais desnecessários (CPF, senhas, dados de terceiros).
+                    </div>
+                </div>
+
             <button type="button" class="btn-salvar" onclick="salvarAlteracoes()">
                 Salvar alterações
             </button>
@@ -106,7 +185,72 @@
 </div>
 
 <script src="painel.js"></script>
+<script src="chat.js"></script>
 <script>
+const CHAT_API_BASE = window.location.origin || "http://127.0.0.1:8000";
+
+if (typeof window.toggleChat !== "function") {
+    window.toggleChat = function () {
+        const janela = document.getElementById("chat-janela");
+        if (!janela) return;
+        janela.classList.toggle("escondido");
+
+        const aberto = !janela.classList.contains("escondido");
+        if (aberto) {
+            setTimeout(() => {
+                const input = document.getElementById("chat-input");
+                if (input) input.focus();
+            }, 100);
+        }
+    };
+}
+
+if (typeof window.enviarPergunta !== "function") {
+    window.enviarPergunta = async function () {
+        const input = document.getElementById("chat-input");
+        if (!input) return;
+
+        const pergunta = input.value.trim();
+        if (!pergunta) return;
+
+        const body = document.getElementById("chat-body");
+        const divUser = document.createElement("div");
+        divUser.className = "chat-msg user";
+        divUser.textContent = pergunta;
+        body.appendChild(divUser);
+
+        const divDigitando = document.createElement("div");
+        divDigitando.className = "chat-digitando";
+        divDigitando.id = "chat-digitando";
+        divDigitando.innerHTML = "<span></span><span></span><span></span>";
+        body.appendChild(divDigitando);
+
+        input.value = "";
+
+        try {
+            const resposta = await fetch(`${CHAT_API_BASE}/agente`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ pergunta })
+            }).then(r => r.json());
+
+            const divBot = document.createElement("div");
+            divBot.className = "chat-msg bot";
+            divBot.textContent = resposta.resposta || "Não consegui responder agora.";
+            body.appendChild(divBot);
+        } catch (e) {
+            const divErro = document.createElement("div");
+            divErro.className = "chat-msg erro";
+            divErro.textContent = "❌ Não consegui conectar ao servidor do bot.";
+            body.appendChild(divErro);
+        } finally {
+            const atual = document.getElementById("chat-digitando");
+            if (atual) atual.remove();
+            body.scrollTop = body.scrollHeight;
+        }
+    };
+}
+
 function sairPainel() {
     sessionStorage.removeItem("usuario");
     window.location.href = "login.html";

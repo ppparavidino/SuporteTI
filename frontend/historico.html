@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Chamados | Suporte TI</title>
+    <link rel="stylesheet" href="historico.css">
+</head>
+<body>
+
+<header class="topo">
+    <div class="brand">
+        <img src="LOGOTIPO.png" alt="Logo Viação Pendotiba" class="brand-logo">
+        <div>
+            <h1>Histórico de chamados</h1>
+            <p>Arquivo completo · organizado por mês/ano</p>
+        </div>
+    </div>
+    <div class="topo-acoes">
+        <a href="painel.html" class="btn-link">← Voltar ao painel</a>
+        <button type="button" class="btn-sair" onclick="sair()">Sair</button>
+    </div>
+</header>
+
+<main class="conteudo">
+
+    <div class="filtros">
+        <input type="search" id="busca" placeholder="Buscar por título, login, setor..." oninput="aplicarFiltros()">
+        <select id="filtro-status" onchange="aplicarFiltros()">
+            <option value="">Todos os status</option>
+            <option value="ABERTO">Aberto</option>
+            <option value="EM_ANDAMENTO">Em andamento</option>
+            <option value="RESOLVIDO">Resolvido</option>
+        </select>
+    </div>
+
+    <p id="resumo" class="resumo">Carregando...</p>
+
+    <div id="pastas" class="pastas"></div>
+
+</main>
+
+<!-- Modal detalhe -->
+<div id="modal" class="modal escondido">
+    <div class="modal-box">
+        <button type="button" class="fechar" onclick="fecharModal()">×</button>
+        <h2 id="modal-titulo">Chamado</h2>
+        <div id="modal-corpo"></div>
+    </div>
+</div>
+
+<script src="historico.js"></script>
+</body>
+</html>
