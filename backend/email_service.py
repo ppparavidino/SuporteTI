@@ -10,21 +10,24 @@ Configuração típica cPanel:
 A porta 2096 é do webmail no navegador, NÃO é SMTP.
 """
 
+import os
 import smtplib
 import ssl
+from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 # ============================================================
-# CONFIGURAÇÃO — ajuste a SENHA do e-mail da TI
+# Configuração carregada do ambiente; mantenha os valores reais no .env local.
 # ============================================================
-SMTP_HOST = "mail.viacaopendotiba.com.br"
-SMTP_PORT = 465          # 465 = SSL | 587 = TLS
-SMTP_USER = "ti@viacaopendotiba.com.br"
-SMTP_PASSWORD = "REMOVED_SMTP_SECRET"
-SMTP_USE_SSL = True      # True para porta 465 | False para 587 com STARTTLS
-REMETENTE = "ti@viacaopendotiba.com.br"
-REMETENTE_NOME = "Suporte de TI - Viação Pendotiba"
+load_dotenv()
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "465"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_USE_SSL = os.getenv("SMTP_USE_SSL", "true").lower() == "true"
+REMETENTE = os.getenv("SMTP_SENDER", SMTP_USER)
+REMETENTE_NOME = os.getenv("SMTP_SENDER_NAME", "Suporte de TI")
 
 
 def enviar_email_chamado_resolvido(
@@ -42,10 +45,10 @@ def enviar_email_chamado_resolvido(
     if not email_destino or "@" not in email_destino:
         return {"ok": False, "erro": "E-mail do solicitante inválido ou ausente."}
 
-    if SMTP_PASSWORD == "COLOQUE_A_SENHA_DO_EMAIL_AQUI":
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASSWORD or not REMETENTE:
         return {
             "ok": False,
-            "erro": "Senha do SMTP não configurada em email_service.py"
+            "erro": "Configuração SMTP ausente. Verifique as variáveis de ambiente."
         }
 
     assunto = "Chamado Resolvido"
@@ -126,7 +129,7 @@ def enviar_email_recuperacao_senha(
     if not email_destino or "@" not in email_destino:
         return {"ok": False, "erro": "E-mail inválido."}
 
-    if SMTP_PASSWORD == "COLOQUE_A_SENHA_DO_EMAIL_AQUI":
+    if not SMTP_HOST or not SMTP_USER or not SMTP_PASSWORD or not REMETENTE:
         return {"ok": False, "erro": "Senha do SMTP não configurada."}
 
     assunto = "Recuperação de senha - Suporte TI"

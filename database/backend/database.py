@@ -1,9 +1,13 @@
+import os
 import pyodbc
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
-SERVER = r"localhost\SQLEXPRESS"
-DATABASE = "SuporteTI"
-DRIVER = "ODBC Driver 18 for SQL Server"
+SERVER = os.getenv("DB_SERVER", "")
+DATABASE = os.getenv("DB_DATABASE", "")
+DRIVER = os.getenv("DB_DRIVER", "ODBC Driver 18 for SQL Server")
 
 
 connection_string = (
@@ -16,4 +20,6 @@ connection_string = (
 
 
 def conectar():
+    if not SERVER or not DATABASE:
+        raise RuntimeError("DB_SERVER e DB_DATABASE devem estar configurados no ambiente.")
     return pyodbc.connect(connection_string)

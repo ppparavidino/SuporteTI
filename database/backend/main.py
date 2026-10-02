@@ -23,11 +23,21 @@ class LoginUsuario(BaseModel):
 app = FastAPI()
 
 # ==========================================================
-# CORS — liberado para desenvolvimento local (Live Server)
+# Configure as origens permitidas em CORS_ORIGINS (separadas por vírgula).
 # ==========================================================
+import os
+
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ORIGINS",
+        "http://localhost:5500,http://127.0.0.1:5500",
+    ).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
