@@ -187,7 +187,7 @@
 <script src="painel.js"></script>
 <script src="chat.js"></script>
 <script>
-const CHAT_API_BASE = window.location.origin || "http://127.0.0.1:8000";
+const CHAT_API_BASE = window.SUPORTE_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:8000`;
 
 if (typeof window.toggleChat !== "function") {
     window.toggleChat = function () {

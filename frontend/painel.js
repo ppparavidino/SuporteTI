@@ -1,5 +1,5 @@
-// URL base da API: usa o mesmo host em que a interface está servida
-const API_URL = window.location.origin || "http://127.0.0.1:8000";
+// Permite configurar a API em implantação; por padrão usa a porta 8000 do mesmo host.
+const API_URL = window.SUPORTE_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:8000`;
 
 let chamadoSelecionado = null;
 

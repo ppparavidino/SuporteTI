@@ -1,5 +1,5 @@
-// URL base da API (FastAPI rodando na porta 8000)
-const API_URL = "http://127.0.0.1:8000";
+// Permite configurar a API em implantação; por padrão usa a porta 8000 do mesmo host.
+const API_URL = window.SUPORTE_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:8000`;
 
 async function carregarSetores() {
     const select = document.getElementById("setor");
